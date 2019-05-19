@@ -1,3 +1,5 @@
+// WARNING: No static player speed
+
 const spreadID = a => {
     let i = 0;
 
@@ -24,7 +26,6 @@ const gameAssets = window.gameAssets = spreadID({
         output: null
     }
 });
-const gameInfo = window.gameInfo = {}
 
 /*
 	0 - void
@@ -43,9 +44,22 @@ const map = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-]
+];
+
+const gameInfo = window.gameInfo = {
+    blockSize: window.innerWidth / map[0].length
+}
 
 function preload() {
+    // Check if map is valid
+    {
+        let a = map[0].length;
+        if( map.filter(io => io.length === a).length !== map.length ) {
+            alert("MAP ERROR. CHECK THE CONSOLE");
+            throw new Error("Given map is invalid. Please, check if all layers have the same number of blocks");
+        }
+    }
+
     // func@: Get assets by type
     const gt = a => Object.values(gameAssets).filter(io => io.type === a);
 
@@ -69,5 +83,20 @@ function setup() {
 function draw() {
     background(0);
 
-    // ...
+    // Draw map // TODO: Use classes
+    map.forEach((ma, iy) => {
+        ma.forEach((mk, ix) => {
+            const s = gameInfo.blockSize;
+
+            if(mk === 1) {
+                image(
+                    Object.values(gameAssets)[0].output,
+                    ix * s,
+                    iy * s,
+                    s,
+                    s
+                );
+            }
+        });
+    });
 }
