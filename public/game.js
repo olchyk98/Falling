@@ -119,7 +119,7 @@ const map = [ // goes from down to up of the screen
     [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
 ];
 
-let liveMap = [];
+let liveMap = window.liveMap = [];
 
 const gameInfo = window.gameInfo = {
     canvas: {
@@ -167,7 +167,7 @@ function setup() {
     createCanvas(gameInfo.canvas.width, gameInfo.canvas.height);
     frameRate(60);
 
-    gameInfo.activeObjects.player = new Player(400, 550);
+    gameInfo.activeObjects.player = new Player(400, 20);
 }
 
 function draw() {
@@ -200,7 +200,7 @@ function draw() {
 
                 break;
                 default:break;
-            }            
+            }
         });
     });
 
