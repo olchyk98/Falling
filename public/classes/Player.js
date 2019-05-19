@@ -16,7 +16,7 @@ class Player {
         // Dims
         this.dims = {
             width: .9 * bs,
-            height: 1.2 * bs
+            height: 1.3 * bs
         }
 
         // View
@@ -91,7 +91,7 @@ class Player {
             this.velocity = 0;
         }
 
-        if (xAllowed && nextX < innerWidth && nextX + this.dims.width > 0) {
+        if (xAllowed && nextX + this.dims.width < innerWidth && nextX > 0) {
             this.pos.x = nextX;
         }
 

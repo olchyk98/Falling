@@ -114,6 +114,16 @@ const gameAssets = window.gameAssets = spreadID({
             "CANDY_CASTLE": './assets/backgrounds/background3.png'
         },
         output: null
+    },
+    "ITEMS": {
+        type: "LOADABLE_KEYS_MODEL_PACK",
+        murl: {
+            "BANANAS": './assets/items/bananas.png',
+            "COCONUT": './assets/items/coconut.png',
+            "HEALING_POTION": './assets/items/healingPotion.png',
+
+        },
+        output: null
     }
 });
 
@@ -126,8 +136,8 @@ const pressedKeys = window.pressedKeys = {}
 	3 - spikes
 */
 const map = [ // goes from down to up of the screen
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
     [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
 ];
 
@@ -236,15 +246,74 @@ function draw() {
         });
     });
 
+    // Draw status bar
+    {
+        let cw = 400, // Container width
+            hh = 20, // health bar height 
+            mt = 20, // margin top
+            fis = 25, // food icon size
+            gbe = 12.5, // gap between elements
+            cfg = 17.5; // custom food c-items gap
+
+        // Food
+        image(
+            gameAssets["ITEMS"].output["BANANAS"],
+            innerWidth / 2 - fis / 2 - cfg,
+            mt,
+            fis,
+            fis
+        );
+        textSize(20);
+        fill('white');
+        text(
+            '320',
+            innerWidth / 2 - fis / 2 + cfg,
+            mt + fis / 2 + 5
+        );
+
+        // Health
+        push();
+            noStroke();
+            fill('rgba(0, 0, 0, .2)');
+            rect(
+                innerWidth / 2 - cw / 2,
+                mt + fis + gbe,
+                cw,
+                hh
+            );
+            fill('rgba(255, 0, 0, .85)');
+            rect(
+                innerWidth / 2 - cw / 2,
+                mt + fis + gbe,
+                cw,
+                hh
+            );
+            textSize(12.5);
+            fill('white');
+            textAlign(CENTER)
+            text(
+                '144 health (43%)',
+                innerWidth / 2,
+                mt + fis + gbe + hh / 2 + 4.5
+            );
+        pop();
+
+        // Skills
+        
+    }
+
     // Draw & Update Player
     gameInfo.activeObjects.player.render().update();
+
+    // TODO: Draw falling blocks
+    // ...
 }
 
 function keyPressed() {
     switch (keyCode) {
         case 32:
             gameInfo.activeObjects.player.jump();
-            break;
+        break;
     }
 
     pressedKeys[keyCode] = true;
