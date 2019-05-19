@@ -107,6 +107,8 @@ const gameAssets = window.gameAssets = spreadID({
     }
 });
 
+const pressedKeys = window.pressedKeys = {}
+
 /*
 	0 - void
     1 - grass block
@@ -186,7 +188,6 @@ function draw() {
                     if(b && b instanceof Block) {
                         b.render();
                     } else {
-
                         if(!liveMap[iy]) liveMap[iy] = [];
                         liveMap[iy][ix] = (new Block(
                             gameAssets[Object.keys(gameAssets).find(io => gameAssets[io].markupID === mk)].output,
@@ -206,4 +207,18 @@ function draw() {
 
     // Draw & Update Player
     gameInfo.activeObjects.player.render().update();
+}
+
+function keyPressed() {
+    switch(keyCode) {
+        case 32:
+            gameInfo.activeObjects.player.jump();
+        break;
+    }
+
+    pressedKeys[keyCode] = true;
+}
+
+function keyReleased() {
+    pressedKeys[keyCode] = false;
 }

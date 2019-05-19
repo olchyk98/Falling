@@ -2,7 +2,9 @@ class Player {
     constructor(x, y) {
         const bs = window.gameInfo.blockSize;
 
-        this.jumpHeight = bs,
+        this.jumpHeight = 20,
+        this.movspeed = 10;
+
         this.health = 100;
 
         // Pos
@@ -24,7 +26,7 @@ class Player {
 
         // Blocks and Player have different values of gravity
         this.velocity = 0;
-        this.gravity = .2;
+        this.gravity = .75;
     }
 
     render() {
@@ -73,8 +75,19 @@ class Player {
             this.velocity = 0;
         }
 
+        // FIXME: Quick change
+        if(window.pressedKeys[65]) {
+            this.pos.x -= this.movspeed;
+        } else if(window.pressedKeys[68]) {
+            this.pos.x += this.movspeed;
+        }
+
         this.updateModel();
         return this;
+    }
+
+    jump() {
+        this.velocity = -this.jumpHeight;
     }
 
     updateModel() {
