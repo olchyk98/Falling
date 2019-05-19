@@ -1,0 +1,29 @@
+{
+  "name": "falling-prototype",
+  "version": "0.0.1",
+  "description": "...",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "infstart": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/olchyk98/Falling.git"
+  },
+  "keywords": [
+    "p5",
+    "js",
+    "es"
+  ],
+  "author": "Oles Odynets",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/olchyk98/Falling/issues"
+  },
+  "homepage": "https://github.com/olchyk98/Falling#readme",
+  "dependencies": {
+    "express": "^4.17.0"
+  }
+}
