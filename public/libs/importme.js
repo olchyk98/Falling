@@ -11,7 +11,7 @@ window.importJS = u => {
     i.src = u;
     i.type = "text/javascript";
     i.addEventListener('error', () => {
-        c(`We couldn't load file "${ u }. This file is not available!"`);
+        c(`File "${ u }" is not available!`);
     });
     document.head.appendChild(i);
 
