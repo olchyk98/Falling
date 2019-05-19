@@ -7,12 +7,18 @@ window.importJS('./classes/Player.js');
 const spreadID = a => {
     let i = 0;
 
-    for(let ma of Object.keys(a)) a[ma].id = i++;
+    for (let ma of Object.keys(a)) a[ma].id = i++;
 
     return a;
 }
 
 // ABLOCK - ACTION BLOCK
+/*
+    LOADABLE_MODEL: '1'
+    LOADABLE_NOKEYS_MODELS_PACK: ['1', '2', '3']
+    LOADABLE_KEYS_MODEL_PACK: {'arsdasd': '1', 'ssdkjsnad': '2'}
+    LOADABLE_KEYS_MODELS_PACK: {'arsdasd': ['1', '2', '3'], 'ssdkjsnad': ['4', '5', '6']}
+*/
 const gameAssets = window.gameAssets = spreadID({
     "GRASS_BLOCK": {
         type: "LOADABLE_MODEL",
@@ -27,13 +33,8 @@ const gameAssets = window.gameAssets = spreadID({
         markupID: 2
     },
     "SPIKES_ABLOCK": {
-        type: "LOADABLE_NOKEYS_MODELS_PACK",
-        murl: [
-            './assets/other/spikes/1.png',
-            './assets/other/spikes/2.png',
-            './assets/other/spikes/3.png',
-            './assets/other/spikes/4.png'
-        ],
+        type: "LOADABLE_MODEL",
+        murl: './assets/other/spikes.png',
         output: null,
         markupID: 3
     },
@@ -104,6 +105,15 @@ const gameAssets = window.gameAssets = spreadID({
             ]
         },
         output: null
+    },
+    "BACKGROUNDS": {
+        type: "LOADABLE_KEYS_MODEL_PACK",
+        murl: {
+            "SNOW": './assets/backgrounds/background1.png',
+            "GREEN_TREES": './assets/backgrounds/background2.png',
+            "CANDY_CASTLE": './assets/backgrounds/background3.png'
+        },
+        output: null
     }
 });
 
@@ -136,7 +146,7 @@ const gameInfo = window.gameInfo = {
 
 function preload() {
     // Check if map has a valid structure
-    if(map.length > 1 && map.slice(1).filter(io => io.length === map[0].length).length !== map.length - 1) {
+    if (map.length > 1 && map.slice(1).filter(io => io.length === map[0].length).length !== map.length - 1) {
         alert("MAP ERROR. CHECK THE CONSOLE");
         throw new Error("Given map is invalid. Please, check if all layers have the same number of blocks");
     }
@@ -145,22 +155,30 @@ function preload() {
     const gt = a => Object.values(gameAssets).filter(io => io.type === a);
 
     // Load single models
-    for(let ma of gt("LOADABLE_MODEL")) {
+    for (let ma of gt("LOADABLE_MODEL")) {
         ma.output = loadImage(ma.murl);
     }
 
     // Load images pack without keys
-    for(let ma of gt("LOADABLE_NOKEYS_MODELS_PACK")) {
+    for (let ma of gt("LOADABLE_NOKEYS_MODELS_PACK")) {
         ma.output = [];
-        for(let mk of ma.murl) ma.output.push(loadImage(mk));
+        for (let mk of ma.murl) ma.output.push(loadImage(mk));
     }
 
-    // Load images pack with keys
-    for(let ma of gt("LOADABLE_KEYS_MODELS_PACK")) {
+    // Load images pack with keys @[mult]
+    for (let ma of gt("LOADABLE_KEYS_MODELS_PACK")) {
         ma.output = {}
-        for(let mk of Object.keys(ma.murl)) {
+        for (let mk of Object.keys(ma.murl)) {
             ma.output[mk] = [];
-            for(let ml of ma.murl[mk]) ma.output[mk].push(loadImage(ml));
+            for (let ml of ma.murl[mk]) ma.output[mk].push(loadImage(ml));
+        }
+    }
+
+    // Load images pack with keys @[single]
+    for (let ma of gt("LOADABLE_KEYS_MODEL_PACK")) {
+        ma.output = {}
+        for (let mk of Object.keys(ma.murl)) {
+            ma.output[mk] = loadImage(ma.murl[mk]);
         }
     }
 }
@@ -173,34 +191,47 @@ function setup() {
 }
 
 function draw() {
-    background(0);
+    {
+        const i = gameAssets["BACKGROUNDS"].output["GREEN_TREES"],
+            p = innerHeight * (i.width / i.height);
+
+        image(
+            i,
+            0,
+            innerHeight - p,
+            innerWidth,
+            p
+        )
+    }
 
     // Draw blocks // TODO: Use classes
     map.slice().reverse().forEach((ma, iy) => {
         ma.forEach((mk, ix) => {
-            if(mk === 0) return;
+            if (mk === 0) return;
             const s = gameInfo.blockSize,
-                  b = liveMap[iy] && liveMap[iy][ix];
+                b = liveMap[iy] && liveMap[iy][ix];
 
-            switch(mk) {
+            switch (mk) {
                 case gameAssets["GRASS_BLOCK"].markupID:
                 case gameAssets["DOWNGRASS_BLOCK"].markupID:
-                    if(b && b instanceof Block) {
+                case gameAssets["SPIKES_ABLOCK"].markupID:
+                    if (b && b instanceof Block) {
                         b.render();
                     } else {
-                        if(!liveMap[iy]) liveMap[iy] = [];
+                        if (!liveMap[iy]) liveMap[iy] = [];
                         liveMap[iy][ix] = (new Block(
                             gameAssets[Object.keys(gameAssets).find(io => gameAssets[io].markupID === mk)].output,
                             ix * s,
                             innerHeight - (iy + 1) * s,
-                            s
+                            s,
+                            ([
+                                gameAssets["SPIKES_ABLOCK"].markupID
+                            ].includes(mk)) ? "AUTO" : null
                         )).render();
                     }
-                break;
-                case gameAssets["SPIKES_ABLOCK"].markupID:
-
-                break;
-                default:break;
+                    break;
+                default:
+                    break;
             }
         });
     });
@@ -210,10 +241,10 @@ function draw() {
 }
 
 function keyPressed() {
-    switch(keyCode) {
+    switch (keyCode) {
         case 32:
             gameInfo.activeObjects.player.jump();
-        break;
+            break;
     }
 
     pressedKeys[keyCode] = true;

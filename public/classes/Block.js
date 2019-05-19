@@ -1,7 +1,19 @@
-window.Block = window.Spikes = class Block extends Obstacle {
-    constructor(m, x, y, s) {
-        super(s, s, x, y); // > this.dims, this.pos
+window.Block = class Block extends Obstacle {
+    constructor(m, x, y, w, h = null) {
+        let hAuto = h === "AUTO";
 
+        if (hAuto) {
+            h = m.height / m.width * w
+        }
+
+        super( // > this.dims, this.pos
+            w,
+            h || w,
+            x,
+            (!hAuto) ? y : y + (window.gameInfo.blockSize - h)
+        );
+
+        this.hAuto = hAuto;
         this.model = m;
     }
 

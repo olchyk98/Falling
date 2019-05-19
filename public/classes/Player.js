@@ -2,14 +2,15 @@ class Player {
     constructor(x, y) {
         const bs = window.gameInfo.blockSize;
 
-        this.jumpHeight = 20,
+        this.jumpHeight = 20;
         this.movspeed = 10;
 
         this.health = 100;
 
         // Pos
         this.pos = {
-            x, y
+            x,
+            y
         }
 
         // Dims
@@ -42,44 +43,56 @@ class Player {
     }
 
     update() {
-        if(--this.framesToUpdate <= 0) {
+        if (--this.framesToUpdate <= 0) {
             this.framesToUpdate = this.framesToUpdateD;
             this.nextFrame();
         }
 
         const nextVelocity = this.velocity + this.gravity,
-              nextY = this.pos.y + this.velocity + this.gravity,
-              nextX = null;
-        let   yAllowed = true,
-              xAllowed = true;
+            nextY = this.pos.y + this.velocity + this.gravity;
+        let yAllowed = true,
+            xAllowed = true,
+            nextX = this.pos.x;
+
+        if (window.pressedKeys[65]) {
+            nextX -= this.movspeed
+        } else if (window.pressedKeys[68]) {
+            nextX += this.movspeed
+        }
 
         [
             ...window.liveMap.flat().filter(io => io)
         ].forEach(io => {
             // Y
-            if(io.checkTouch(
-                this.pos.x,
-                nextY,
-                this.dims.width,
-                this.dims.height
-            )) {
-                if(yAllowed) yAllowed = false;
+            if (io.checkTouch(
+                    this.pos.x,
+                    nextY,
+                    this.dims.width,
+                    this.dims.height
+                )) {
+                if (yAllowed) yAllowed = false;
             }
-            // // X
+
+            // X
+            if (io.checkTouch(
+                    nextX,
+                    this.pos.y,
+                    this.dims.width,
+                    this.dims.height
+                )) {
+                if (xAllowed) xAllowed = false;
+            }
         });
 
-        if(yAllowed) {
-            this.velocity += this.gravity;
-            this.pos.y += this.velocity;
+        if (yAllowed) {
+            this.velocity = nextVelocity;
+            this.pos.y = nextY;
         } else {
             this.velocity = 0;
         }
 
-        // FIXME: Quick change
-        if(window.pressedKeys[65]) {
-            this.pos.x -= this.movspeed;
-        } else if(window.pressedKeys[68]) {
-            this.pos.x += this.movspeed;
+        if (xAllowed && nextX < innerWidth && nextX + this.dims.width > 0) {
+            this.pos.x = nextX;
         }
 
         this.updateModel();
@@ -87,19 +100,21 @@ class Player {
     }
 
     jump() {
+        if (this.velocity) return;
+
         this.velocity = -this.jumpHeight;
     }
 
     updateModel() {
         let a = this.currentModels;
 
-        if(this.velocity) {
+        if (this.velocity) {
             this.currentModels = "JUMP";
         } else {
-            this.currentModels = "IDLE";   
+            this.currentModels = "IDLE";
         }
 
-        if(this.currentModels !== a) {
+        if (this.currentModels !== a) {
             this.currentFrame = 0;
             this.framesToUpdate = this.framesToUpdateD;
         }
@@ -108,7 +123,7 @@ class Player {
     }
 
     nextFrame() {
-        if(++this.currentFrame > this.models[this.currentModels].length - 1) {
+        if (++this.currentFrame > this.models[this.currentModels].length - 1) {
             this.currentFrame = 0;
         }
 
