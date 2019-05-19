@@ -28,36 +28,29 @@ const gameAssets = window.gameAssets = spreadID({
 });
 
 /*
-	0 - void
-	1 - grass block
-	2 - spikes
+	v - void
+	g - grass block
+	s - spikes
 */
-const map = [
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+const map = [ // goes from down to up of the screen
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 ];
 
 const gameInfo = window.gameInfo = {
-    blockSize: window.innerWidth / map[0].length
+    canvas: {
+        height: innerHeight,
+        width: innerWidth
+    },
+    blockSize: innerWidth / map[0].length
 }
 
 function preload() {
-    // Check if map is valid
-    {
-        let a = map[0].length;
-        if( map.filter(io => io.length === a).length !== map.length ) {
-            alert("MAP ERROR. CHECK THE CONSOLE");
-            throw new Error("Given map is invalid. Please, check if all layers have the same number of blocks");
-        }
+    // Check if map has a valid structure
+    if(map.length > 1 && map.slice(1).filter(io => io.length === map[0].length).length !== map.length - 1) {
+        alert("MAP ERROR. CHECK THE CONSOLE");
+        throw new Error("Given map is invalid. Please, check if all layers have the same number of blocks");
     }
 
     // func@: Get assets by type
@@ -76,7 +69,7 @@ function preload() {
 }
 
 function setup() {
-    createCanvas(innerWidth - .5, innerHeight - .5);
+    createCanvas(gameInfo.canvas.width, gameInfo.canvas.height);
     frameRate(60);
 }
 
@@ -84,7 +77,7 @@ function draw() {
     background(0);
 
     // Draw map // TODO: Use classes
-    map.forEach((ma, iy) => {
+    map.slice().reverse().forEach((ma, iy) => {
         ma.forEach((mk, ix) => {
             const s = gameInfo.blockSize;
 
@@ -92,7 +85,7 @@ function draw() {
                 image(
                     Object.values(gameAssets)[0].output,
                     ix * s,
-                    iy * s,
+                    innerHeight - (iy + 1) * s,
                     s,
                     s
                 );
