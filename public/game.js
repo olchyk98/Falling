@@ -124,6 +124,18 @@ const gameAssets = window.gameAssets = spreadID({
 
         },
         output: null
+    },
+    "SKILLS": {
+        type: "LOADABLE_KEYS_MODELS_PACK",
+        murl: {
+            "REGENERATION": [
+                './assets/skills/regeneration1.png',
+                './assets/skills/regeneration2.png',
+                './assets/skills/regeneration3.png',
+                './assets/skills/regeneration4.png'
+            ]
+        },
+        output: null
     }
 });
 
@@ -253,7 +265,10 @@ function draw() {
             mt = 20, // margin top
             fis = 25, // food icon size
             gbe = 12.5, // gap between elements
-            cfg = 17.5; // custom food c-items gap
+            cfg = 17.5, // custom food c-items gap
+            sis = 30, // skill icon size
+            sims = sis * .75, // skill icon mat size
+             smr = 10; // skills margin
 
         // Food
         image(
@@ -299,7 +314,49 @@ function draw() {
         pop();
 
         // Skills
-        
+        [
+            {
+                name: "REGENERATION",
+                action: () => alert("SKILL"),
+                icon: gameAssets["SKILLS"].output["REGENERATION"][0],
+                restore: 20 // %
+            }
+        ].map(({ action, icon, restore }, index) => {
+            const x = innerWidth / 2 - cw / 2,
+                  y = mt + fis + hh + gbe * 2;
+            // smr
+
+            push();
+                // cover
+                fill('#2C0C0C');
+                strokeWeight(3);
+                stroke('white');
+                rect(
+                    x,
+                    y,
+                    sis,
+                    sis
+                );
+                // icon
+                image(
+                    gameAssets["SKILLS"].output["REGENERATION"][0],
+                    x + sis / 7,
+                    y + sis / 7,
+                    sims,
+                    sims
+                );
+                // restore
+                const rpx = sis * (1 - restore / 100) // restore upx
+                noStroke();
+                fill('rgba(255, 255, 255, .65)');
+                rect(
+                    x,
+                    y + (sis - rpx),
+                    sis,
+                    rpx
+                );
+            pop();
+        });
     }
 
     // Draw & Update Player
