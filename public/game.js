@@ -266,9 +266,9 @@ function draw() {
             fis = 25, // food icon size
             gbe = 12.5, // gap between elements
             cfg = 17.5, // custom food c-items gap
-            sis = 30, // skill icon size
+            sis = 35, // skill icon size
             sims = sis * .75, // skill icon mat size
-             smr = 10; // skills margin
+            smr = 25; // skills margin
 
         // Food
         image(
@@ -314,17 +314,57 @@ function draw() {
         pop();
 
         // Skills
-        [
+        const skills = [
             {
                 name: "REGENERATION",
                 action: () => alert("SKILL"),
                 icon: gameAssets["SKILLS"].output["REGENERATION"][0],
-                restore: 20 // %
-            }
-        ].map(({ action, icon, restore }, index) => {
-            const x = innerWidth / 2 - cw / 2,
+                restored: 20,
+                fireKeyCode: 104 // %
+            },
+            {
+                name: "REGENERATION",
+                action: () => alert("SKILL"),
+                icon: gameAssets["SKILLS"].output["REGENERATION"][0],
+                restored: 20 // %
+            },
+            {
+                name: "REGENERATION",
+                action: () => alert("SKILL"),
+                icon: gameAssets["SKILLS"].output["REGENERATION"][0],
+                restored: 20 // %
+            },
+            {
+                name: "REGENERATION",
+                action: () => alert("SKILL"),
+                icon: gameAssets["SKILLS"].output["REGENERATION"][0],
+                restored: 20 // %
+            },
+            {
+                name: "REGENERATION",
+                action: () => alert("SKILL"),
+                icon: gameAssets["SKILLS"].output["REGENERATION"][0],
+                restored: 20 // %
+            },
+            {
+                name: "REGENERATION",
+                action: () => alert("SKILL"),
+                icon: gameAssets["SKILLS"].output["REGENERATION"][0],
+                restored: 20 // %
+            },
+            {
+                name: "REGENERATION",
+                action: () => alert("SKILL"),
+                icon: gameAssets["SKILLS"].output["REGENERATION"][0],
+                restored: 100 // %
+            },
+        ];
+
+        const skillsW = a => ( Number.isInteger(a) ? a : skills.length - 1 ) * (sis + smr);
+        
+        skills.map(({ fireKeyCode, name, action, icon, restored }, index) => {
+            const x = innerWidth / 2 - cw / 2 + skillsW(index) + cw / 2 - skillsW() / 2 - sis / 2, // FIXME:
                   y = mt + fis + hh + gbe * 2;
-            // smr
 
             push();
                 // cover
@@ -339,14 +379,23 @@ function draw() {
                 );
                 // icon
                 image(
-                    gameAssets["SKILLS"].output["REGENERATION"][0],
+                    icon,
                     x + sis / 7,
                     y + sis / 7,
                     sims,
                     sims
                 );
-                // restore
-                const rpx = sis * (1 - restore / 100) // restore upx
+                // fire button
+                textSize(15);
+                textAlign(CENTER);
+                fill('black');
+                text(
+                    String.fromCharCode(fireKeyCode),
+                    x + sis / 2 + .5,
+                    y + sis / 2 + 5
+                );
+                // restored
+                const rpx = sis * (1 - restored / 100) // restored upx
                 noStroke();
                 fill('rgba(255, 255, 255, .65)');
                 rect(
@@ -355,6 +404,19 @@ function draw() {
                     sis,
                     rpx
                 );
+
+                // listen for action
+                if(
+                    ( // keyboard
+                        keyIsPressed &&
+                        keyCode === fireKeyCode
+                    ) ||
+                    ( // mouse
+                        mouseIsPressed &&
+                        (mouseX > x && mouseX < x + sis) &&
+                        (mouseY > y && mouseY < y + sis)
+                    )
+                ) action();
             pop();
         });
     }
