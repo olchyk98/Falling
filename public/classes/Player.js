@@ -13,6 +13,9 @@ class Player {
             y
         }
 
+        this.dirX = -1;
+        this.movementX = false;
+
         // Dims
         this.dims = {
             width: .9 * bs,
@@ -31,13 +34,34 @@ class Player {
     }
 
     render() {
-        image(
-            this.models[this.currentModels][this.currentFrame],
-            this.pos.x,
-            this.pos.y,
-            this.dims.width,
-            this.dims.height
-        );
+        const m = this.models[this.currentModels][this.currentFrame];
+
+        if(this.dirX === -1) {
+            image(
+                m,
+                this.pos.x,
+                this.pos.y,
+                this.dims.width,
+                this.dims.height
+            );
+        } else if(this.dirX === 1) {
+            push();
+                translate(
+                    m.width + this.pos.x + this.dims.width / 2,
+                    this.pos.y
+                );
+                scale(-1, 1);
+                image(
+                    m,
+                    0,
+                    0,
+                    this.dims.width,
+                    this.dims.height
+                );
+            pop();
+        } else {
+            console.error("Invalid dirX value");
+        }
 
         return this;
     }
@@ -52,13 +76,7 @@ class Player {
             nextY = this.pos.y + this.velocity + this.gravity;
         let yAllowed = true,
             xAllowed = true,
-            nextX = this.pos.x;
-
-        if (window.pressedKeys[65]) {
-            nextX -= this.movspeed
-        } else if (window.pressedKeys[68]) {
-            nextX += this.movspeed
-        }
+            nextX = this.pos.x - (this.movementX ? this.dirX * this.movspeed : 0);
 
         [
             ...window.liveMap.flat().filter(io => io)
@@ -105,11 +123,21 @@ class Player {
         this.velocity = -this.jumpHeight;
     }
 
+    setDir(d, a) {
+        this.movementX = a;
+        this.dirX = {
+            "LEFT": -1,
+            "RIGHT": 1
+        }[d] || 0;
+    }
+
     updateModel() {
         let a = this.currentModels;
 
         if (this.velocity) {
             this.currentModels = "JUMP";
+        } else if(this.movementX) {
+            this.currentModels = "RUN";
         } else {
             this.currentModels = "IDLE";
         }

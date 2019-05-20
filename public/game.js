@@ -1,8 +1,12 @@
 // WARNING: No static player speed
 
+/* PARENTS */
 window.importJS('./classes/Obstacle.js');
+
+/* CHILDREN */
 window.importJS('./classes/Block.js');
 window.importJS('./classes/Player.js');
+window.importJS('./classes/FallingItem.js');
 
 const spreadID = a => {
     let i = 0;
@@ -121,7 +125,10 @@ const gameAssets = window.gameAssets = spreadID({
             "BANANAS": './assets/items/bananas.png',
             "COCONUT": './assets/items/coconut.png',
             "HEALING_POTION": './assets/items/healingPotion.png',
-
+            "BRICKS": './assets/fallingblocks/bricks.png',
+            "WANDS": './assets/fallingblocks/wands.png',
+            "SNOWBALL": './assets/fallingblocks/snowball.png',
+            "ICE": './assets/fallingblocks/ice.png'
         },
         output: null
     },
@@ -162,7 +169,8 @@ const gameInfo = window.gameInfo = {
     },
     blockSize: innerWidth / map[0].length,
     activeObjects: {
-        player: null
+        player: null,
+        fallingItems: []
     }
 }
 
@@ -210,6 +218,9 @@ function setup() {
     frameRate(60);
 
     gameInfo.activeObjects.player = new Player(400, 20);
+    gameInfo.activeObjects.fallingItems.push(
+        new FallingItem(100, 100, 300, 0, 5, "OBSTACLE", gameAssets["ITEMS"].output["BRICKS"])
+    )
 }
 
 function draw() {
@@ -223,7 +234,7 @@ function draw() {
             innerHeight - p,
             innerWidth,
             p
-        )
+        );
     }
 
     // Draw blocks // TODO: Use classes
@@ -424,15 +435,24 @@ function draw() {
     // Draw & Update Player
     gameInfo.activeObjects.player.render().update();
 
-    // TODO: Draw falling blocks
-    // ...
+    // Draw falling blocks
+    for(let ma of gameInfo.activeObjects.fallingItems) ma.render().update();
 }
 
 function keyPressed() {
     switch (keyCode) {
-        case 32:
+        case 32: // space
             gameInfo.activeObjects.player.jump();
         break;
+        case 39:
+        case 68: // left
+            gameInfo.activeObjects.player.setDir("LEFT", true);
+        break;
+        case 37:
+        case 65: // right
+            gameInfo.activeObjects.player.setDir("RIGHT", true);
+        break;
+        default:break;
     }
 
     pressedKeys[keyCode] = true;
@@ -440,4 +460,16 @@ function keyPressed() {
 
 function keyReleased() {
     pressedKeys[keyCode] = false;
+
+    switch (keyCode) {
+        case 39:
+        case 68: // left
+            gameInfo.activeObjects.player.setDir("LEFT", null);
+        break;
+        case 37:
+        case 65: // right
+            gameInfo.activeObjects.player.setDir("RIGHT", null);
+        break;
+        default:break;
+    }
 }
