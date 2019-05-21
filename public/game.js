@@ -40,7 +40,8 @@ const gameAssets = window.gameAssets = spreadID({
         type: "LOADABLE_MODEL",
         murl: './assets/other/spikes.png',
         output: null,
-        markupID: 3
+        markupID: 3,
+        touchAction: target => target.damage(Infinity) // instant kill
     },
     "PLAYER": {
         type: "LOADABLE_KEYS_MODELS_PACK",
@@ -75,7 +76,7 @@ const gameAssets = window.gameAssets = spreadID({
                 './assets/player/attack27.png',
                 './assets/player/attack28.png',
             ],
-            "DEAD": [
+            "DIE": [
                 './assets/player/dead1.png',
                 './assets/player/dead2.png',
                 './assets/player/dead3.png',
@@ -309,15 +310,19 @@ function draw() {
                     if (b && b instanceof Block) {
                         b.render();
                     } else {
+                        const mo = gameAssets[Object.keys(gameAssets).find(io => gameAssets[io].markupID === mk)];
+                        if(!mo) console.error("Invalid object mark!", markupID);
+
                         if (!liveMap[iy]) liveMap[iy] = [];
                         liveMap[iy][ix] = (new Block(
-                            gameAssets[Object.keys(gameAssets).find(io => gameAssets[io].markupID === mk)].output,
+                            mo.output,
                             ix * s,
                             innerHeight - (iy + 1) * s,
                             s,
                             ([
                                 gameAssets["SPIKES_ABLOCK"].markupID
-                            ].includes(mk)) ? "AUTO" : null
+                            ].includes(mk)) ? "AUTO" : null,
+                            mo.touchAction
                         )).render();
                     }
                     break;
@@ -356,6 +361,8 @@ function draw() {
         );
 
         // Health
+        const playerHealth = window.gameInfo.activeObjects.player.getHealth();
+
         push();
             noStroke();
             fill('rgba(0, 0, 0, .2)');
@@ -366,17 +373,20 @@ function draw() {
                 hh
             );
             fill('rgba(255, 0, 0, .85)');
-            rect(
-                innerWidth / 2 - cw / 2,
-                mt + fis + gbe,
-                cw,
-                hh
-            );
+            {
+                const _mh = 1 - playerHealth.current / playerHealth.max;
+                rect(
+                    innerWidth / 2 - cw / 2,
+                    mt + fis + gbe,
+                    cw - cw * ((_mh > 0) ? _mh : 0),
+                    hh
+                );
+            }
             textSize(12.5);
             fill('white');
-            textAlign(CENTER)
+            textAlign(CENTER);
             text(
-                '144 health (43%)',
+                `${ playerHealth.current }hp (${ floor(playerHealth.current / playerHealth.max * 100) }%)`,
                 innerWidth / 2,
                 mt + fis + gbe + hh / 2 + 4.5
             );

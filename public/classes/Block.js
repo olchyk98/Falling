@@ -1,5 +1,5 @@
 window.Block = class Block extends Obstacle {
-    constructor(m, x, y, w, h = null) {
+    constructor(m, x, y, w, h = null, ta) {
         let hAuto = h === "AUTO";
 
         if (hAuto) {
@@ -15,6 +15,8 @@ window.Block = class Block extends Obstacle {
 
         this.hAuto = hAuto;
         this.model = m;
+
+        if(ta) this.touchAction = ta;
     }
 
     render() {

@@ -5,7 +5,8 @@ class Player {
         this.jumpHeight = 20;
         this.movspeed = 10;
 
-        this.health = 100;
+        this.maxHealth = this.health = this.previousHealth = this.currentHealth = 100;
+        this.isDead = false;
 
         // Pos
         this.pos = {
@@ -26,6 +27,7 @@ class Player {
         this.models = window.gameAssets["PLAYER"].output;
         this.currentModels = "IDLE";
         this.currentFrame = 0;
+        this.lastAnimation = this.lastAnimationDone = false;
         this.framesToUpdate = this.framesToUpdateD = 10; // time to frame update & default
 
         // Blocks and Player have different values of gravity
@@ -67,6 +69,8 @@ class Player {
     }
 
     update() {
+        // this.health = lerp(this.previousHealth, this.currentHealth, .2);
+
         if (--this.framesToUpdate <= 0) {
             this.framesToUpdate = this.framesToUpdateD;
             this.nextFrame();
@@ -91,11 +95,14 @@ class Player {
                 )) {
                 if(io instanceof Block) {
                     if(yAllowed) yAllowed = false;
-                } else if(io instanceof FallingItem) {
+                    if(io.touchAction) io.touchAction(this);
+                } else if(io instanceof FallingItem && io.potential) {
                     if(io.type === "OBSTACLE") { // dead
                         this.damage(io.damage);
+                        io.setPotential(false);
                     } else if(io.type === "FOOD") { // more food
                         console.log("MORE FOOD");
+                        io.setPotential(false);
                     }
                 }
             }
@@ -108,6 +115,8 @@ class Player {
                     this.dims.height
                 )) {
                 xAllowed = false;
+
+                if(io.touchAction) io.touchAction(this);
             }
         });
 
@@ -127,12 +136,14 @@ class Player {
     }
 
     jump() {
-        if (this.velocity) return;
+        if (this.velocity || this.isDead) return;
 
         this.velocity = -this.jumpHeight;
     }
 
     setDir(d, a) {
+        if(this.isDead) return;
+
         this.movementX = a;
         this.dirX = {
             "LEFT": -1,
@@ -140,14 +151,32 @@ class Player {
         }[d] || 0;
     }
 
-    damage() {
-        console.log("DAMAGE");
+    damage(d) {
+        if(this.isDead) return;
+
+        this.previousHealth = this.health;
+        this.currentHealth = this.health - d;
+        if(this.currentHealth < 0) {
+            this.currentHealth = 0;
+            this.die();
+        }
+    }
+
+    die() {
+        if(this.isDead) return;
+
+        this.isDead = true;
+        this.lastAnimation = true;
+        this.lastAnimationDone = false;
+        this.updateModel();
     }
 
     updateModel() {
         let a = this.currentModels;
 
-        if (this.velocity) {
+        if(this.isDead) {
+            this.currentModels = "DIE";
+        } else if(this.velocity) {
             this.currentModels = "JUMP";
         } else if(this.movementX) {
             this.currentModels = "RUN";
@@ -164,10 +193,29 @@ class Player {
     }
 
     nextFrame() {
-        if (++this.currentFrame > this.models[this.currentModels].length - 1) {
-            this.currentFrame = 0;
+        if(this.lastAnimationDone) return;
+
+        const lfi = this.models[this.currentModels].length - 1; // last frame index
+
+        if (++this.currentFrame > lfi) {
+            if(!this.lastAnimation) {
+                this.currentFrame = 0;
+            } else {
+                // Don't run animation anymore
+                this.lastAnimationDone = true;
+
+                // Stop at the last frame
+                this.currentFrame = lfi;
+            }
         }
 
         return this;
+    }
+
+    getHealth() {
+        return ({
+            max: this.maxHealth,
+            current: this.currentHealth
+        });
     }
 }

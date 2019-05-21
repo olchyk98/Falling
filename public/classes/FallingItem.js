@@ -11,6 +11,8 @@ class FallingItem extends Obstacle { // Food, Obstacle
         this.type = t; // "OBSTACLE", "FOOD"
         this.model = m;
 
+        this.potential = true;
+
         if(this.type === "OBSTACLE") {
             this.damage = 40; // LEVELING
         }
@@ -63,5 +65,14 @@ class FallingItem extends Obstacle { // Food, Obstacle
         }
 
         return this;
+    }
+
+    setPotential(s) {
+        this.potential = s;
+
+        if(!s && this.type === "FOOD") { // Destroy food without potential
+            const _a = window.gameInfo.activeObjects.fallingItems;
+            _a.splice(_a.findIndex(io => io.id === this.id), 1);
+        }
     }
 }
