@@ -386,7 +386,7 @@ function draw() {
             fill('white');
             textAlign(CENTER);
             text(
-                `${ playerHealth.current }hp (${ floor(playerHealth.current / playerHealth.max * 100) }%)`,
+                `${ floor(playerHealth.current) }hp (${ floor(playerHealth.current / playerHealth.max * 100) }%)`,
                 innerWidth / 2,
                 mt + fis + gbe + hh / 2 + 4.5
             );

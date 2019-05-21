@@ -69,7 +69,7 @@ class Player {
     }
 
     update() {
-        // this.health = lerp(this.previousHealth, this.currentHealth, .2);
+        this.health = lerp(this.health, this.currentHealth, .1);
 
         if (--this.framesToUpdate <= 0) {
             this.framesToUpdate = this.framesToUpdateD;
@@ -215,7 +215,7 @@ class Player {
     getHealth() {
         return ({
             max: this.maxHealth,
-            current: this.currentHealth
+            current: this.health
         });
     }
 }
