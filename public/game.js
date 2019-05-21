@@ -125,6 +125,12 @@ const gameAssets = window.gameAssets = spreadID({
             "BANANAS": './assets/items/bananas.png',
             "COCONUT": './assets/items/coconut.png',
             "HEALING_POTION": './assets/items/healingPotion.png',
+        },
+        output: null
+    },
+    "FALLING_ITEMS": {
+        type: "LOADABLE_KEYS_MODEL_PACK",
+        murl: {
             "BRICKS": './assets/fallingblocks/bricks.png',
             "WANDS": './assets/fallingblocks/wands.png',
             "SNOWBALL": './assets/fallingblocks/snowball.png',
@@ -165,12 +171,65 @@ let liveMap = window.liveMap = [];
 const gameInfo = window.gameInfo = {
     canvas: {
         height: innerHeight + 1,
-        width: innerWidth
+        width: innerWidth,
+        frameRate:  60
     },
     blockSize: innerWidth / map[0].length,
     activeObjects: {
         player: null,
         fallingItems: []
+    },
+    nextBlock: Infinity // time to next falling block
+}
+
+this.nextblockID = 0;
+
+function handleNextBlock() {
+    const a = gameInfo.nextBlock;
+
+    if(a === Infinity || a <= 0) {
+        gameInfo.nextBlock = random(
+            60 / gameInfo.canvas.frameRate * 60 * .25,
+            60 / gameInfo.canvas.frameRate * 60 * 1
+        );
+
+        if(a <= 0) {
+            const o = o => o[floor(random(o.length))];
+
+            if(random(false, true) <= .95) { // obstacle // LEVELING
+                const size = random(150, 200), // LEVELING
+                      mod = o(Object.values(gameAssets["FALLING_ITEMS"].output));
+
+                gameInfo.activeObjects.fallingItems.push(
+                    new FallingItem(
+                        size, size,
+                        random(0, innerWidth - size),
+                        -size,
+                        random(10, 15), // speed // LEVELING
+                        "OBSTACLE",
+                        mod,
+                        this.nextblockID++
+                    )
+                );
+            } else { // food
+                const mod = o(Object.values(gameAssets["ITEMS"].output)),
+                      size = 50;
+
+                gameInfo.activeObjects.fallingItems.push(
+                    new FallingItem(
+                        size, size,
+                        random(0, innerWidth - size),
+                        -size,
+                        random(10, 12.5), // speed // LEVELING
+                        "FOOD",
+                        mod,
+                        this.nextblockID++
+                    )
+                );
+            }
+        }
+    } else {
+        gameInfo.nextBlock--;
     }
 }
 
@@ -215,15 +274,14 @@ function preload() {
 
 function setup() {
     createCanvas(gameInfo.canvas.width, gameInfo.canvas.height);
-    frameRate(60);
+    frameRate(gameInfo.canvas.frameRate);
 
     gameInfo.activeObjects.player = new Player(400, 20);
-    gameInfo.activeObjects.fallingItems.push(
-        new FallingItem(100, 100, 300, 0, 5, "OBSTACLE", gameAssets["ITEMS"].output["BRICKS"])
-    )
 }
 
 function draw() {
+    backTasker();
+
     {
         const i = gameAssets["BACKGROUNDS"].output["GREEN_TREES"],
             p = innerHeight * (i.width / i.height);
@@ -472,4 +530,8 @@ function keyReleased() {
         break;
         default:break;
     }
+}
+
+function backTasker() {
+    handleNextBlock();
 }

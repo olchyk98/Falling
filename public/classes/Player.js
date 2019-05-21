@@ -79,7 +79,8 @@ class Player {
             nextX = this.pos.x - (this.movementX ? this.dirX * this.movspeed : 0);
 
         [
-            ...window.liveMap.flat().filter(io => io)
+            ...window.liveMap.flat().filter(io => io),
+            ...window.gameInfo.activeObjects.fallingItems.filter(io => io instanceof Obstacle)
         ].forEach(io => {
             // Y
             if (io.checkTouch(
@@ -88,17 +89,25 @@ class Player {
                     this.dims.width,
                     this.dims.height
                 )) {
-                if (yAllowed) yAllowed = false;
+                if(io instanceof Block) {
+                    if(yAllowed) yAllowed = false;
+                } else if(io instanceof FallingItem) {
+                    if(io.type === "OBSTACLE") { // dead
+                        this.damage(io.damage);
+                    } else if(io.type === "FOOD") { // more food
+                        console.log("MORE FOOD");
+                    }
+                }
             }
 
             // X
-            if (io.checkTouch(
+            if (xAllowed && io instanceof Block && io.checkTouch(
                     nextX,
                     this.pos.y,
                     this.dims.width,
                     this.dims.height
                 )) {
-                if (xAllowed) xAllowed = false;
+                xAllowed = false;
             }
         });
 
@@ -129,6 +138,10 @@ class Player {
             "LEFT": -1,
             "RIGHT": 1
         }[d] || 0;
+    }
+
+    damage() {
+        console.log("DAMAGE");
     }
 
     updateModel() {
