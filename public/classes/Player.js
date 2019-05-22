@@ -69,7 +69,7 @@ class Player {
     }
 
     update() {
-        this.health = lerp(this.health, this.currentHealth, .1);
+        this.health = lerp(this.health, this.currentHealth, .25);
 
         if (--this.framesToUpdate <= 0) {
             this.framesToUpdate = this.framesToUpdateD;
@@ -101,7 +101,7 @@ class Player {
                         this.damage(io.damage);
                         io.setPotential(false);
                     } else if(io.type === "FOOD") { // more food
-                        console.log("MORE FOOD");
+                        this.eat();
                         io.setPotential(false);
                     }
                 }
@@ -135,6 +135,13 @@ class Player {
         return this;
     }
 
+    eat() {
+        const a = window.gameInfo.gameSession;
+        a.food++;
+
+        window.gameInfo.pushSession(a);
+    }
+
     jump() {
         if (this.velocity || this.isDead) return;
 
@@ -165,6 +172,7 @@ class Player {
     die() {
         if(this.isDead) return;
 
+        window.gameInfo.active = false;
         this.isDead = true;
         this.lastAnimation = true;
         this.lastAnimationDone = false;

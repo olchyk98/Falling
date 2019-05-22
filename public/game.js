@@ -77,12 +77,13 @@ const gameAssets = window.gameAssets = spreadID({
                 './assets/player/attack28.png',
             ],
             "DIE": [
-                './assets/player/dead1.png',
-                './assets/player/dead2.png',
-                './assets/player/dead3.png',
-                './assets/player/dead4.png',
-                './assets/player/dead5.png',
-                './assets/player/dead6.png'
+                './assets/player/die1.png',
+                './assets/player/die2.png',
+                './assets/player/die3.png',
+                './assets/player/die4.png',
+                './assets/player/die5.png',
+                './assets/player/die6.png',
+                './assets/player/die7.png'
             ],
             "IDLE": [
                 './assets/player/idle1.png',
@@ -170,6 +171,7 @@ const map = [ // goes from down to up of the screen
 let liveMap = window.liveMap = [];
 
 const gameInfo = window.gameInfo = {
+    active: true,
     canvas: {
         height: innerHeight + 1,
         width: innerWidth,
@@ -180,12 +182,33 @@ const gameInfo = window.gameInfo = {
         player: null,
         fallingItems: []
     },
-    nextBlock: Infinity // time to next falling block
+    nextBlock: Infinity, // time to next falling block
+    pushSession: function(state) { // @state: Object!
+        localStorage.setItem("gameStats", JSON.stringify(state));
+    },
+    gameSession: (() => {
+        const sn = "gameStats";
+        let stats;
+
+        try {
+            stats = JSON.parse(localStorage.getItem(sn) || "");
+        } catch {
+            stats = {
+                food: 0,
+                flashPoints: 0
+            }
+            localStorage.setItem(sn, JSON.stringify(stats));
+        }
+
+        return stats;
+    })()
 }
 
 this.nextblockID = 0;
 
 function handleNextBlock() {
+    if(!window.gameInfo.active) return;
+
     const a = gameInfo.nextBlock;
 
     if(a === Infinity || a <= 0) {
@@ -355,7 +378,7 @@ function draw() {
         textSize(20);
         fill('white');
         text(
-            '320',
+            window.gameInfo.gameSession.food,
             innerWidth / 2 - fis / 2 + cfg,
             mt + fis / 2 + 5
         );
