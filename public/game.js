@@ -206,6 +206,8 @@ const gameInfo = window.gameInfo = {
 
 this.nextblockID = 0;
 
+const secondsToFrames = (s = 1) => 60 / gameInfo.canvas.frameRate * 60 * s;
+
 function handleNextBlock() {
     if(!window.gameInfo.active) return;
 
@@ -213,8 +215,8 @@ function handleNextBlock() {
 
     if(a === Infinity || a <= 0) {
         gameInfo.nextBlock = random(
-            60 / gameInfo.canvas.frameRate * 60 * .25,
-            60 / gameInfo.canvas.frameRate * 60 * 1
+            secondsToFrames(.25),
+            secondsToFrames()
         );
 
         if(a <= 0) {
@@ -416,56 +418,29 @@ function draw() {
         pop();
 
         // Skills
-        const skills = [
+        const skills = [ // action[func]: We need to use arrow function here, because if we dont func context becomes undefined
             {
                 name: "REGENERATION",
-                action: () => alert("SKILL"),
+                action: (...a) => window.gameInfo.activeObjects.player.useSkill(...a),
                 icon: gameAssets["SKILLS"].output["REGENERATION"][0],
-                restored: 20,
-                fireKeyCode: 104 // %
+                restoreFrames: secondsToFrames(10),  // static
+                fireKeyCode: 104,
+                runTime: secondsToFrames(4)
             },
             {
-                name: "REGENERATION",
-                action: () => alert("SKILL"),
+                name: "SLIDE",
+                action: (...a) => window.gameInfo.activeObjects.player.useSkill(...a),
                 icon: gameAssets["SKILLS"].output["REGENERATION"][0],
-                restored: 20 // %
-            },
-            {
-                name: "REGENERATION",
-                action: () => alert("SKILL"),
-                icon: gameAssets["SKILLS"].output["REGENERATION"][0],
-                restored: 20 // %
-            },
-            {
-                name: "REGENERATION",
-                action: () => alert("SKILL"),
-                icon: gameAssets["SKILLS"].output["REGENERATION"][0],
-                restored: 20 // %
-            },
-            {
-                name: "REGENERATION",
-                action: () => alert("SKILL"),
-                icon: gameAssets["SKILLS"].output["REGENERATION"][0],
-                restored: 20 // %
-            },
-            {
-                name: "REGENERATION",
-                action: () => alert("SKILL"),
-                icon: gameAssets["SKILLS"].output["REGENERATION"][0],
-                restored: 20 // %
-            },
-            {
-                name: "REGENERATION",
-                action: () => alert("SKILL"),
-                icon: gameAssets["SKILLS"].output["REGENERATION"][0],
-                restored: 100 // %
+                restoreFrames: secondsToFrames(2),  // static
+                fireKeyCode: 106,
+                runTime: secondsToFrames(2)
             },
         ];
 
         const skillsW = a => ( Number.isInteger(a) ? a : skills.length - 1 ) * (sis + smr);
         
-        skills.map(({ fireKeyCode, name, action, icon, restored }, index) => {
-            const x = innerWidth / 2 - cw / 2 + skillsW(index) + cw / 2 - skillsW() / 2 - sis / 2, // FIXME:
+        skills.map(({ fireKeyCode, name, action, icon, restoreFrames, runTime }, index) => {
+            const x = innerWidth / 2 - cw / 2 + skillsW(index) + cw / 2 - skillsW() / 2 - sis / 2,
                   y = mt + fis + hh + gbe * 2;
 
             push();
@@ -497,7 +472,8 @@ function draw() {
                     y + sis / 2 + 5
                 );
                 // restored
-                const rpx = sis * (1 - restored / 100) // restored upx
+                const restored = (window.gameInfo.activeObjects.player.getUsedSkills()[name] + restoreFrames - frameCount) / restoreFrames
+                const rpx = sis * ( restored < 0 ? 0 : restored ) // restored upx
                 noStroke();
                 fill('rgba(255, 255, 255, .65)');
                 rect(
@@ -509,25 +485,28 @@ function draw() {
 
                 // listen for action
                 if(
-                    ( // keyboard
-                        keyIsPressed &&
-                        keyCode === fireKeyCode
-                    ) ||
-                    ( // mouse
-                        mouseIsPressed &&
-                        (mouseX > x && mouseX < x + sis) &&
-                        (mouseY > y && mouseY < y + sis)
+                    (!restored || restored <= 0) &&
+                    (
+                        ( // keyboard
+                            keyIsPressed &&
+                            keyCode === fireKeyCode
+                        ) ||
+                        ( // mouse
+                            mouseIsPressed &&
+                            (mouseX > x && mouseX < x + sis) &&
+                            (mouseY > y && mouseY < y + sis)
+                        )
                     )
-                ) action();
+                ) action(name, runTime);
             pop();
         });
     }
 
     // Draw & Update Player
-    gameInfo.activeObjects.player.render().update();
+    gameInfo.activeObjects.player.update().render();
 
     // Draw falling blocks
-    for(let ma of gameInfo.activeObjects.fallingItems) ma.render().update();
+    for(let ma of gameInfo.activeObjects.fallingItems) ma.update().render();
 }
 
 function keyPressed() {

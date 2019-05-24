@@ -17,6 +17,10 @@ class Player {
         this.dirX = -1;
         this.movementX = false;
 
+        this.usedSkills = {} // [name]: [frame]
+        this.usingSkill = false; // TODO, FIXME: Convert it to array(object) and do something with skill frames counter...
+        this.usingSkillsFrames = null;
+
         // Dims
         this.dims = {
             width: .9 * bs,
@@ -180,6 +184,8 @@ class Player {
     }
 
     updateModel() {
+        if(this.usingSkill) return; // curr models handle by useSkill() func
+
         let a = this.currentModels;
 
         if(this.isDead) {
@@ -225,5 +231,35 @@ class Player {
             max: this.maxHealth,
             current: this.health
         });
+    }
+
+    useSkill(sn, at) { // @sn:> Skill name, @at:> Active time
+        // Idea: check if requesting skill is reloading
+        this.usedSkills[sn] = frameCount;
+        let inv = false; // invalid skill name
+
+        switch(sn) {
+            case 'SLIDE':
+                this.currentModels = "SLIDE_SKILL";
+            break;
+            default:
+                inv = true;
+            break;
+        }
+
+        if(!inv) {
+            this.usingSkill = true;
+            this.usingSkillsFrames = at;
+        }
+    }
+
+    handleSkills() {
+        if(!this.usingSkillsFrames || --this.usingSkillFrames <= 0) {
+            this.usingSkill = false;
+        }
+    }
+
+    getUsedSkills() {
+        return this.usedSkills;
     }
 }
