@@ -143,12 +143,59 @@ const gameAssets = window.gameAssets = spreadID({
     "SKILLS": {
         type: "LOADABLE_KEYS_MODELS_PACK",
         murl: {
-            "REGENERATION": [
-                './assets/skills/regeneration1.png',
-                './assets/skills/regeneration2.png',
-                './assets/skills/regeneration3.png',
-                './assets/skills/regeneration4.png'
-            ]
+            "REGENERATION": [ // #0#-1-2-3-4
+                './assets/skills/main/regeneration1.png',
+                './assets/skills/main/regeneration2.png',
+                './assets/skills/main/regeneration3.png',
+                './assets/skills/main/regeneration4.png'
+            ],
+            "ATTACK": [
+                './assets/skills/main/attack.png'
+            ],
+            "SLIDE": [
+                './assets/skills/main/slide1.png',
+                './assets/skills/main/slide2.png',
+                './assets/skills/main/slide3.png'
+            ],
+            "METEOR": [
+                './assets/skills/main/meteor1.png',
+                './assets/skills/main/meteor2.png',
+                './assets/skills/main/meteor3.png'
+            ],
+            "RAGE": [
+                './assets/skills/main/rage1.png',
+                './assets/skills/main/rage2.png',
+                './assets/skills/main/rage3.png'
+            ],
+            "SHIELD": [
+                './assets/skills/main/shield1.png',
+                './assets/skills/main/shield2.png',
+                './assets/skills/main/shield3.png'
+            ],
+            "PENTAGRAM": [
+                './assets/skills/main/pentagram1.png',
+                './assets/skills/main/pentagram2.png',
+                './assets/skills/main/pentagram3.png'
+            ],
+            "FREEZE_TIME": [
+                './assets/skills/main/slowtime1.png',
+                './assets/skills/main/slowtime2.png',
+                './assets/skills/main/slowtime3.png'
+            ],
+            "NO_LIMITS": [
+                './assets/skills/main/nolimit1.png',
+                './assets/skills/main/nolimit2.png',
+                './assets/skills/main/nolimit3.png'
+            ],
+        },
+        output: null
+    },
+    "SKILL_FRAMES": { // borders
+        type: "LOADABLE_KEYS_MODEL_PACK",
+        murl: {
+            "ATTACK": './assets/skills/frames/attack.png',
+            "DEFAULT": './assets/skills/frames/default.png',
+            "SAVE": './assets/skills/frames/save.png'
         },
         output: null
     }
@@ -175,7 +222,7 @@ const gameInfo = window.gameInfo = {
     canvas: {
         height: innerHeight + 1,
         width: innerWidth,
-        frameRate:  60
+        frameRate: 60
     },
     blockSize: innerWidth / map[0].length,
     activeObjects: {
@@ -206,7 +253,7 @@ const gameInfo = window.gameInfo = {
 
 this.nextblockID = 0;
 
-const secondsToFrames = (s = 1) => 60 / gameInfo.canvas.frameRate * 60 * s;
+const secondsToFrames = window.secondsToFrames = (s = 1) => 60 / gameInfo.canvas.frameRate * 60 * s;
 
 function handleNextBlock() {
     if(!window.gameInfo.active) return;
@@ -365,9 +412,10 @@ function draw() {
             fis = 25, // food icon size
             gbe = 12.5, // gap between elements
             cfg = 17.5, // custom food c-items gap
-            sis = 35, // skill icon size
+            sis = 42.5, // skill icon size
             sims = sis * .75, // skill icon mat size
-            smr = 25; // skills margin
+            smr = 25, // skills margin
+            sbes = 10; // skill border extra ingap
 
         // Food
         image(
@@ -418,41 +466,32 @@ function draw() {
         pop();
 
         // Skills
-        const skills = [ // action[func]: We need to use arrow function here, because if we dont func context becomes undefined
-            {
-                name: "REGENERATION",
-                action: (...a) => window.gameInfo.activeObjects.player.useSkill(...a),
-                icon: gameAssets["SKILLS"].output["REGENERATION"][0],
-                restoreFrames: secondsToFrames(10),  // static
-                fireKeyCode: 104,
-                runTime: secondsToFrames(4)
-            },
-            {
-                name: "SLIDE",
-                action: (...a) => window.gameInfo.activeObjects.player.useSkill(...a),
-                icon: gameAssets["SKILLS"].output["REGENERATION"][0],
-                restoreFrames: secondsToFrames(2),  // static
-                fireKeyCode: 106,
-                runTime: secondsToFrames(1)
-            },
-        ];
+        const skills = window.gameInfo.activeObjects.player.skills.filter(io => io.level);
 
         const skillsW = a => ( Number.isInteger(a) ? a : skills.length - 1 ) * (sis + smr);
         
-        skills.map(({ fireKeyCode, name, action, icon, restoreFrames, runTime }, index) => {
+        skills.map(({ level, fireKeyCode, name, icon, restorePack, durationPack, usePrice }, index) => {
             const x = innerWidth / 2 - cw / 2 + skillsW(index) + cw / 2 - skillsW() / 2 - sis / 2,
                   y = mt + fis + hh + gbe * 2;
 
             push();
                 // cover
                 fill('#2C0C0C');
-                strokeWeight(3);
-                stroke('white');
+                // strokeWeight(4);
+                // stroke('white');
                 rect(
                     x,
                     y,
                     sis,
                     sis
+                );
+                // border
+                image(
+                    window.gameAssets["SKILL_FRAMES"].output.SAVE,
+                    x - sbes / 2,
+                    y - sbes / 2,
+                    sis + sbes,
+                    sis + sbes
                 );
                 // icon
                 image(
@@ -463,16 +502,19 @@ function draw() {
                     sims
                 );
                 // fire button
-                textSize(15);
+                strokeWeight(4);
+                stroke('white');
+                textSize(20);
                 textAlign(CENTER);
                 fill('black');
                 text(
                     String.fromCharCode(fireKeyCode),
                     x + sis / 2 + .5,
-                    y + sis / 2 + 5
+                    y + sis / 2 + 7.5
                 );
                 // restored
-                const skilld = window.gameInfo.activeObjects.player.getUsedSkills()[name];
+                const skilld = window.gameInfo.activeObjects.player.getUsedSkills[name];
+                const restoreFrames = secondsToFrames((Array.isArray(restorePack)) ? restorePack[level] || restorePack[0] : restorePack);
                 const restored = (skilld) ? (skilld.startFrame + restoreFrames - frameCount ) / restoreFrames : 0;
                 const rpx = sis * ( restored < 0 ? 0 : restored ) // restored upx
                 noStroke();
@@ -482,6 +524,15 @@ function draw() {
                     y + (sis - rpx),
                     sis,
                     rpx
+                );
+                // info
+                textSize(12.5);
+                textAlign(CENTER);
+                fill('white');
+                text(
+                    `${ usePrice } 🍌`,
+                    x + sis / 2 + 5,
+                    y + sis + 12.5 + 10
                 );
 
                 // listen for action
@@ -498,7 +549,13 @@ function draw() {
                             (mouseY > y && mouseY < y + sis)
                         )
                     )
-                ) action(name, runTime);
+                ) window.gameInfo.activeObjects.player.useSkill(
+                    name,
+                    secondsToFrames(
+                        (Array.isArray(durationPack)) ? durationPack[level - 1] || durationPack[0] : durationPack
+                    ),
+                    usePrice
+                );
             pop();
         });
     }

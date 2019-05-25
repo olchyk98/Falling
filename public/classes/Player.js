@@ -1,5 +1,6 @@
 class Player {
-    #_bs;
+    #_bs
+    #availableSkills
 
     constructor(x, y) {
         this.#_bs = window.gameInfo.blockSize;
@@ -21,6 +22,193 @@ class Player {
 
         this.usedSkills = {} // [name]: { startFrame, leftFrames }
         this.usingSkill = false;
+        this.#availableSkills = [
+            {
+                level: 1,
+                name: "REGENERATION",
+                icon: window.gameAssets["SKILLS"].output["REGENERATION"][0],
+                restorePack: [ // s
+                    10,
+                    9,
+                    7,
+                    5
+                ],
+                fireKeyCode: 102, // f
+                durationPack: 4, // s
+                usePrice: 5, // bananas
+                updatePrice: [
+                    80,
+                    150,
+                    250
+                ]
+            },
+            {
+                level: 1,
+                name: "SLIDE",
+                icon: window.gameAssets["SKILLS"].output["SLIDE"][0],
+                restorePack: [ // s
+                    4,
+                    5,
+                    6
+                ],
+                fireKeyCode: 103, // g
+                durationPack: 2, // s
+                usePrice: 1, // bananas
+                updatePrice: [
+                    50,
+                    250
+                ]
+            },
+            {
+                level: 1,
+                name: "ATTACK",
+                icon: window.gameAssets["SKILLS"].output["ATTACK"][0],
+                restorePack: [ // s
+                    15,
+                    20,
+                    30
+                ],
+                fireKeyCode: 104, // h
+                durationPack: 4, // s
+                usePrice: 5, // bananas
+                updatePrice: [
+                    40,
+                    600
+                ],
+                rangePack: [
+                    this.#_bs / 2,
+                    this.#_bs / 4,
+                    this.#_bs / 6
+                ]
+            },
+            {
+                level: 0,
+                name: "PENTAGRAM",
+                icon: window.gameAssets["SKILLS"].output["PENTAGRAM"][0],
+                restorePack: [ // s
+                    30,
+                    50,
+                    60
+                ],
+                fireKeyCode: 106, // j
+                usePrice: 10, // bananas
+                updatePrice: [
+                    400,
+                    800
+                ],
+                blocksPack: [ // destroys blocks # limit 
+                    4,
+                    8,
+                    Infinity
+                ]
+            },
+            {
+                level: 0,
+                name: "SHIELD",
+                icon: window.gameAssets["SKILLS"].output["SHIELD"][0],
+                restorePack: [ // s
+                    10,
+                    12,
+                    15
+                ],
+                fireKeyCode: 107, // k
+                durationPack: 2, // s
+                usePrice: 4, // bananas
+                updatePrice: [
+                    60,
+                    500
+                ],
+                damageReduce: [ // reduces damage for every attack // %
+                    30,
+                    80,
+                    100
+                ]
+            },
+            {
+                level: 1,
+                name: "METEOR",
+                icon: window.gameAssets["SKILLS"].output["METEOR"][0],
+                restorePack: [ // s
+                    30,
+                    20,
+                    10
+                ],
+                fireKeyCode: 108, // l
+                usePrice: 15, // bananas
+                updatePrice: [
+                    50,
+                    400
+                ]
+            },
+            {
+                level: 1,
+                name: "RAGE",
+                icon: window.gameAssets["SKILLS"].output["RAGE"][0],
+                restorePack: [ // s
+                    100,
+                    80,
+                    100
+                ],
+                fireKeyCode: 105, // i
+                durationPack: [ // s
+                    5,
+                    7,
+                    10
+                ],
+                usePrice: 50, // bananas
+                updatePrice: [
+                    400,
+                    1250
+                ]
+            },
+            {
+                level: 1,
+                name: "FREEZE_TIME",
+                icon: window.gameAssets["SKILLS"].output["FREEZE_TIME"][0],
+                restorePack: [ // s
+                    30,
+                    40,
+                    20
+                ],
+                fireKeyCode: 111, // o
+                durationPack: [ // s
+                    5,
+                    7,
+                    8
+                ],
+                usePrice: 15, // bananas
+                updatePrice: [
+                    100,
+                    600
+                ],
+                speedReduce: [ // reduces falling blocks speed // %
+                    30,
+                    60,
+                    99
+                ]
+            },
+            {
+                level: 0,
+                name: "NO_LIMITS",
+                icon: window.gameAssets["SKILLS"].output["FREEZE_TIME"][0],
+                restorePack: [ // s
+                    4,
+                    8,
+                    200
+                ],
+                fireKeyCode: 112, // p
+                durationPack: [ // s
+                    4,
+                    8,
+                    100
+                ],
+                usePrice: 100, // bananas
+                updatePrice: [
+                    800,
+                    2000
+                ]
+            },
+        ]
 
         // Dims
         this.dims = {
@@ -77,7 +265,6 @@ class Player {
         this.health = lerp(this.health, this.currentHealth, .25);
         this.movespeed = lerp(this.movespeed, this.movespeedD, .01);
         this.handleSkills();
-        console.log(this.movespeed);
 
         if (--this.framesToUpdate <= 0) {
             this.framesToUpdate = this.framesToUpdateD;
@@ -148,6 +335,16 @@ class Player {
         a.food++;
 
         window.gameInfo.pushSession(a);
+    }
+
+    useFood(c) {
+        const a = window.gameInfo.gameSession;
+        if(a - c < 0) return false;
+
+        a.food -= c;
+        window.gameInfo.pushSession(a);
+
+        return true;
     }
 
     jump() {
@@ -237,7 +434,7 @@ class Player {
         });
     }
 
-    useSkill(sn, at) { // @sn:> Skill name, @at:> Active time
+    useSkill(sn, at, pr) { // @sn:> Skill name, @at:> Active time, @pr: Use price
         // Idea: check if requesting skill is reloading
         const o = {
             startFrame: frameCount,
@@ -262,9 +459,11 @@ class Player {
             break;
         }
 
-        if(!inv) {
+        if(!inv && this.useFood(pr)) {
             this.usingSkill = true;
             this.usedSkills[sn] = o;
+        } else {
+            console.error(`Invalid skill: ${ sn }`);
         }
     }
 
@@ -287,7 +486,11 @@ class Player {
         this.usingSkill = !!g().length;
     }
 
-    getUsedSkills() {
+    get getUsedSkills() {
         return this.usedSkills;
+    }
+
+    get skills() {
+        return this.#availableSkills;
     }
 }
