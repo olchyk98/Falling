@@ -433,7 +433,7 @@ function draw() {
                 icon: gameAssets["SKILLS"].output["REGENERATION"][0],
                 restoreFrames: secondsToFrames(2),  // static
                 fireKeyCode: 106,
-                runTime: secondsToFrames(2)
+                runTime: secondsToFrames(1)
             },
         ];
 
@@ -472,7 +472,8 @@ function draw() {
                     y + sis / 2 + 5
                 );
                 // restored
-                const restored = (window.gameInfo.activeObjects.player.getUsedSkills()[name] + restoreFrames - frameCount) / restoreFrames
+                const skilld = window.gameInfo.activeObjects.player.getUsedSkills()[name];
+                const restored = (skilld) ? (skilld.startFrame + restoreFrames - frameCount ) / restoreFrames : 0;
                 const rpx = sis * ( restored < 0 ? 0 : restored ) // restored upx
                 noStroke();
                 fill('rgba(255, 255, 255, .65)');

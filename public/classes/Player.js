@@ -1,11 +1,13 @@
 class Player {
+    #_bs;
+
     constructor(x, y) {
-        const bs = window.gameInfo.blockSize;
+        this.#_bs = window.gameInfo.blockSize;
 
-        this.jumpHeight = 20;
-        this.movspeed = 10;
+        this.jumpHeight = this.jumpHeightD = this.#_bs / 3;
+        this.movespeed = this.movespeedD = this.#_bs / 4;
 
-        this.maxHealth = this.health = this.previousHealth = this.currentHealth = 100;
+        this.maxHealth = this.health = this.previousHealth = this.currentHealth = 1e7;
         this.isDead = false;
 
         // Pos
@@ -17,14 +19,13 @@ class Player {
         this.dirX = -1;
         this.movementX = false;
 
-        this.usedSkills = {} // [name]: [frame]
-        this.usingSkill = false; // TODO, FIXME: Convert it to array(object) and do something with skill frames counter...
-        this.usingSkillsFrames = null;
+        this.usedSkills = {} // [name]: { startFrame, leftFrames }
+        this.usingSkill = false;
 
         // Dims
         this.dims = {
-            width: .9 * bs,
-            height: 1.3 * bs
+            width: .9 * this.#_bs,
+            height: 1.3 * this.#_bs
         }
 
         // View
@@ -74,6 +75,9 @@ class Player {
 
     update() {
         this.health = lerp(this.health, this.currentHealth, .25);
+        this.movespeed = lerp(this.movespeed, this.movespeedD, .01);
+        this.handleSkills();
+        console.log(this.movespeed);
 
         if (--this.framesToUpdate <= 0) {
             this.framesToUpdate = this.framesToUpdateD;
@@ -84,7 +88,7 @@ class Player {
             nextY = this.pos.y + this.velocity + this.gravity;
         let yAllowed = true,
             xAllowed = true,
-            nextX = this.pos.x - (this.movementX ? this.dirX * this.movspeed : 0);
+            nextX = this.pos.x - (this.movementX ? this.dirX * this.movespeed : 0);
 
         [
             ...window.liveMap.flat().filter(io => io),
@@ -235,12 +239,23 @@ class Player {
 
     useSkill(sn, at) { // @sn:> Skill name, @at:> Active time
         // Idea: check if requesting skill is reloading
-        this.usedSkills[sn] = frameCount;
+        const o = {
+            startFrame: frameCount,
+            leftFrames: at
+        }
+
         let inv = false; // invalid skill name
 
         switch(sn) {
             case 'SLIDE':
                 this.currentModels = "SLIDE_SKILL";
+                this.movespeed = this.#_bs / 2;
+                this.jumpHeight = this.#_bs / 8;
+
+                o.outfunc = () => {
+                    this.movespeed = this.movespeedD;
+                    this.jumpHeight = this.jumpHeightD;
+                }
             break;
             default:
                 inv = true;
@@ -249,7 +264,7 @@ class Player {
 
         if(!inv) {
             this.usingSkill = true;
-            this.usingSkillsFrames = at;
+            this.usedSkills[sn] = o;
         }
     }
 
@@ -257,6 +272,19 @@ class Player {
         if(!this.usingSkillsFrames || --this.usingSkillFrames <= 0) {
             this.usingSkill = false;
         }
+
+        const g = () => Object.keys(this.usedSkills).filter(io => this.usedSkills[io].leftFrames > 0);
+
+        // Update active skills
+        for(let ma of g()) {
+            const a = this.usedSkills[ma];
+
+            a.leftFrames--;
+            if(a.leftFrames <= 0 && a.outfunc) a.outfunc();
+        }
+
+        // Update this.usingSkill variable
+        this.usingSkill = !!g().length;
     }
 
     getUsedSkills() {
