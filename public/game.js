@@ -229,6 +229,7 @@ const gameInfo = window.gameInfo = {
         player: null,
         fallingItems: []
     },
+    slowFallingObjects: false, // false || %
     nextBlock: Infinity, // time to next falling block
     pushSession: function(state) { // @state: Object!
         localStorage.setItem("gameStats", JSON.stringify(state));
@@ -260,7 +261,7 @@ function handleNextBlock() {
 
     const a = gameInfo.nextBlock;
 
-    if(a === Infinity || a <= 0) {
+    if((a === Infinity || a <= 0) && !window.gameInfo.slowFallingObjects) {
         gameInfo.nextBlock = random(
             secondsToFrames(.25),
             secondsToFrames()

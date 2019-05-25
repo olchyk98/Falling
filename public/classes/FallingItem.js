@@ -4,13 +4,14 @@ class FallingItem extends Obstacle { // Food, Obstacle
 
         this.id = id; // id in c-array
 
-        this.speed = s;
-        this.gravity = .2; // LEVELING
+        this.speed = this.speedD = s;
+        this.gravity = this.gravityD = .2; // LEVELING
         this.velocity = 0;
 
         this.type = t; // "OBSTACLE", "POINTS"
         this.model = m;
 
+        this.slowMotion = false;
         this.potential = true;
 
         if(this.type === "OBSTACLE") {
@@ -31,6 +32,18 @@ class FallingItem extends Obstacle { // Food, Obstacle
     }
 
     update() {
+        if(window.gameInfo.slowFallingObjects) {
+            if(!this.slowMotion) {
+                this.slowMotion = true;
+                this.speed = this.speed - this.speed / 100 * window.gameInfo.slowFallingObjects;
+            }
+            this.gravity = this.velocity = 0;
+        } else if(this.speed !== this.speedD) {
+            this.slowMotion = false;
+            this.speed = this.speedD;
+            this.gravity = this.gravityD;
+        }
+
         if(this.type === "OBSTACLE") {
             this.velocity += this.gravity;
             this.pos.y += this.speed + this.velocity;

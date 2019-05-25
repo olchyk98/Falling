@@ -198,7 +198,7 @@ class Player {
                     600
                 ],
                 speedReduce: [ // reduces falling blocks speed // %
-                    30,
+                    40,
                     60,
                     99
                 ]
@@ -495,6 +495,9 @@ class Player {
             leftFrames: at
         }
 
+        const fd = () => this.skills.find(io => io.name === sn); // find skill data
+        const gp = (f, l) => (Array.isArray(f)) ? f[l - 1] || f[0] : f; // get pack lvl
+
         let inv = null;
 
         switch(sn) {
@@ -503,10 +506,8 @@ class Player {
                     this.setCustomModel("ATTACK_SKILL");
                     this.velocity -= this.jumpHeight;
 
-                    const _a = this.skills.find(io => io.name === sn);
-                    this.drawRange = (
-                        (Array.isArray(_a.rangePack)) ? _a.rangePack[_a.level - 1] || _a.rangePack[0] : _a.rangePack
-                    );
+                    const _a = fd();
+                    this.drawRange = gp(_a.rangePack, _a.level);
 
                     o.outfunc = () => {
                         this.drawRange = false;
@@ -522,6 +523,16 @@ class Player {
                     o.outfunc = () => {
                         this.movespeed = this.movespeedD;
                         this.jumpHeight = this.jumpHeightD;
+                    }
+                }
+            break;
+            case 'FREEZE_TIME':
+                inv = () => {
+                    const _a = fd();
+
+                    window.gameInfo.slowFallingObjects = gp(_a.speedReduce, _a.level);
+                    o.outfunc = () => {
+                        window.gameInfo.slowFallingObjects = false;
                     }
                 }
             break;
