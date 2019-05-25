@@ -193,7 +193,7 @@ const gameAssets = window.gameAssets = spreadID({
     "SKILL_FRAMES": { // borders
         type: "LOADABLE_KEYS_MODEL_PACK",
         murl: {
-            "ATTACK": './assets/skills/frames/attack.png',
+            "DAMAGE": './assets/skills/frames/attack.png',
             "DEFAULT": './assets/skills/frames/default.png',
             "SAVE": './assets/skills/frames/save.png'
         },
@@ -241,7 +241,7 @@ const gameInfo = window.gameInfo = {
             stats = JSON.parse(localStorage.getItem(sn) || "");
         } catch {
             stats = {
-                food: 0,
+                points: 0,
                 flashPoints: 0
             }
             localStorage.setItem(sn, JSON.stringify(stats));
@@ -284,7 +284,7 @@ function handleNextBlock() {
                         this.nextblockID++
                     )
                 );
-            } else { // food
+            } else { // points
                 const mod = o(Object.values(gameAssets["ITEMS"].output)),
                       size = 50;
 
@@ -294,7 +294,7 @@ function handleNextBlock() {
                         random(0, innerWidth - size),
                         -size,
                         random(10, 12.5), // speed // LEVELING
-                        "FOOD",
+                        "POINTS",
                         mod,
                         this.nextblockID++
                     )
@@ -409,13 +409,12 @@ function draw() {
         let cw = 400, // Container width
             hh = 20, // health bar height 
             mt = 20, // margin top
-            fis = 25, // food icon size
+            fis = 25, // points icon size
             gbe = 12.5, // gap between elements
-            cfg = 17.5, // custom food c-items gap
+            cfg = 17.5, // custom points c-items gap
             sis = 42.5, // skill icon size
             sims = sis * .75, // skill icon mat size
-            smr = 25, // skills margin
-            sbes = 10; // skill border extra ingap
+            smr = 25; // skills margin
 
         // Food
         image(
@@ -428,7 +427,7 @@ function draw() {
         textSize(20);
         fill('white');
         text(
-            window.gameInfo.gameSession.food,
+            window.gameInfo.gameSession.points,
             innerWidth / 2 - fis / 2 + cfg,
             mt + fis / 2 + 5
         );
@@ -470,7 +469,7 @@ function draw() {
 
         const skillsW = a => ( Number.isInteger(a) ? a : skills.length - 1 ) * (sis + smr);
         
-        skills.map(({ level, fireKeyCode, name, icon, restorePack, durationPack, usePrice }, index) => {
+        skills.map(({ level, fireKeyCode, name, icon, restorePack, durationPack, usePrice, borderType, displayName }, index) => {
             const x = innerWidth / 2 - cw / 2 + skillsW(index) + cw / 2 - skillsW() / 2 - sis / 2,
                   y = mt + fis + hh + gbe * 2;
 
@@ -487,11 +486,11 @@ function draw() {
                 );
                 // border
                 image(
-                    window.gameAssets["SKILL_FRAMES"].output.SAVE,
-                    x - sbes / 2,
-                    y - sbes / 2,
-                    sis + sbes,
-                    sis + sbes
+                    window.gameAssets["SKILL_FRAMES"].output[borderType],
+                    x,
+                    y,
+                    sis,
+                    sis
                 );
                 // icon
                 image(
@@ -504,13 +503,13 @@ function draw() {
                 // fire button
                 strokeWeight(4);
                 stroke('white');
-                textSize(20);
+                textSize(17.5);
                 textAlign(CENTER);
                 fill('black');
                 text(
                     String.fromCharCode(fireKeyCode),
                     x + sis / 2 + .5,
-                    y + sis / 2 + 7.5
+                    y + sis / 2 + 6
                 );
                 // restored
                 const skilld = window.gameInfo.activeObjects.player.getUsedSkills[name];
@@ -530,9 +529,14 @@ function draw() {
                 textAlign(CENTER);
                 fill('white');
                 text(
+                    displayName,
+                    x + sis / 2,
+                    y + sis + 12.5 + 5
+                );
+                text(
                     `${ usePrice } 🍌`,
-                    x + sis / 2 + 5,
-                    y + sis + 12.5 + 10
+                    x + sis / 2,
+                    y + sis + 12.5 + 25
                 );
 
                 // listen for action

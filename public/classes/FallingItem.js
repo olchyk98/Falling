@@ -8,7 +8,7 @@ class FallingItem extends Obstacle { // Food, Obstacle
         this.gravity = .2; // LEVELING
         this.velocity = 0;
 
-        this.type = t; // "OBSTACLE", "FOOD"
+        this.type = t; // "OBSTACLE", "POINTS"
         this.model = m;
 
         this.potential = true;
@@ -39,7 +39,7 @@ class FallingItem extends Obstacle { // Food, Obstacle
                 const a = window.gameInfo.activeObjects.fallingItems;
                 a.splice(a.findIndex(io => io.id === this.id), 1);
             }
-        } else if(this.type === "FOOD") {
+        } else if(this.type === "POINTS") {
             const nextVelocity = this.velocity + this.gravity,
                   nextY = this.pos.y + this.speed + nextVelocity;
             let nextYAllowed = true;
@@ -67,10 +67,10 @@ class FallingItem extends Obstacle { // Food, Obstacle
         return this;
     }
 
-    setPotential(s) {
+    setPotential(s, fd) { // @s - new potential, @fd - force remove
         this.potential = s;
 
-        if(!s && this.type === "FOOD") { // Destroy food without potential
+        if((!s && this.type === "POINTS") || fd) { // Destroy food without potential
             const _a = window.gameInfo.activeObjects.fallingItems;
             _a.splice(_a.findIndex(io => io.id === this.id), 1);
         }

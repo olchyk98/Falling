@@ -26,6 +26,8 @@ class Player {
             {
                 level: 1,
                 name: "REGENERATION",
+                displayName: "Regenerate",
+                borderType: "SAVE",
                 icon: window.gameAssets["SKILLS"].output["REGENERATION"][0],
                 restorePack: [ // s
                     10,
@@ -45,6 +47,8 @@ class Player {
             {
                 level: 1,
                 name: "SLIDE",
+                displayName: "Slide",
+                borderType: "DEFAULT",
                 icon: window.gameAssets["SKILLS"].output["SLIDE"][0],
                 restorePack: [ // s
                     4,
@@ -62,6 +66,8 @@ class Player {
             {
                 level: 1,
                 name: "ATTACK",
+                displayName: "Attack",
+                borderType: "DAMAGE",
                 icon: window.gameAssets["SKILLS"].output["ATTACK"][0],
                 restorePack: [ // s
                     15,
@@ -76,14 +82,16 @@ class Player {
                     600
                 ],
                 rangePack: [
-                    this.#_bs / 2,
-                    this.#_bs / 4,
-                    this.#_bs / 6
+                    this.#_bs * 2,
+                    this.#_bs * 4,
+                    this.#_bs * 6
                 ]
             },
             {
                 level: 0,
                 name: "PENTAGRAM",
+                displayName: "Exorcism",
+                borderType: "DAMAGE",
                 icon: window.gameAssets["SKILLS"].output["PENTAGRAM"][0],
                 restorePack: [ // s
                     30,
@@ -105,6 +113,8 @@ class Player {
             {
                 level: 0,
                 name: "SHIELD",
+                displayName: "Protect",
+                borderType: "SAVE",
                 icon: window.gameAssets["SKILLS"].output["SHIELD"][0],
                 restorePack: [ // s
                     10,
@@ -127,6 +137,8 @@ class Player {
             {
                 level: 1,
                 name: "METEOR",
+                displayName: "Meteoristic",
+                borderType: "DAMAGE",
                 icon: window.gameAssets["SKILLS"].output["METEOR"][0],
                 restorePack: [ // s
                     30,
@@ -143,6 +155,8 @@ class Player {
             {
                 level: 1,
                 name: "RAGE",
+                displayName: "Rage",
+                borderType: "DAMAGE",
                 icon: window.gameAssets["SKILLS"].output["RAGE"][0],
                 restorePack: [ // s
                     100,
@@ -164,6 +178,8 @@ class Player {
             {
                 level: 1,
                 name: "FREEZE_TIME",
+                displayName: "Freeze",
+                borderType: "DEFAULT",
                 icon: window.gameAssets["SKILLS"].output["FREEZE_TIME"][0],
                 restorePack: [ // s
                     30,
@@ -190,6 +206,8 @@ class Player {
             {
                 level: 0,
                 name: "NO_LIMITS",
+                displayName: "Infinity",
+                borderType: "DAMAGE",
                 icon: window.gameAssets["SKILLS"].output["FREEZE_TIME"][0],
                 restorePack: [ // s
                     4,
@@ -222,6 +240,7 @@ class Player {
         this.currentFrame = 0;
         this.lastAnimation = this.lastAnimationDone = false;
         this.framesToUpdate = this.framesToUpdateD = 10; // time to frame update & default
+        this.drawRange = false;
 
         // Blocks and Player have different values of gravity
         this.velocity = 0;
@@ -230,6 +249,21 @@ class Player {
 
     render() {
         const m = this.models[this.currentModels][this.currentFrame];
+
+        if(this.drawRange) {
+            push();
+                fill('rgba(0, 0, 0, 0)');
+                drawingContext.setLineDash([5, 15])
+                strokeWeight(4);
+                stroke('rgba(255, 255, 255, .25)');
+                ellipse(
+                    this.pos.x + this.drawRange / 2 - this.dims.width / 2,
+                    this.pos.y + this.drawRange / 2 - this.dims.height / 2,
+                    this.drawRange,
+                    this.drawRange
+                );
+            pop();
+        }
 
         if(this.dirX === -1) {
             image(
@@ -295,7 +329,7 @@ class Player {
                     if(io.type === "OBSTACLE") { // dead
                         this.damage(io.damage);
                         io.setPotential(false);
-                    } else if(io.type === "FOOD") { // more food
+                    } else if(io.type === "POINTS") { // more points
                         this.eat();
                         io.setPotential(false);
                     }
@@ -312,6 +346,21 @@ class Player {
                 xAllowed = false;
 
                 if(io.touchAction) io.touchAction(this);
+            }
+
+            // Test for attack
+            if(
+                this.drawRange &&
+                io instanceof FallingItem &&
+                io.type === "OBSTACLE" &&
+                io.checkTouch(
+                    this.pos.x - this.drawRange / 2,
+                    nextY - this.drawRange / 2,
+                    this.dims.width + this.drawRange / 2,
+                    this.dims.height + this.drawRange / 2
+                )
+            ) {
+                io.setPotential(false, true);
             }
         });
 
@@ -332,16 +381,16 @@ class Player {
 
     eat() {
         const a = window.gameInfo.gameSession;
-        a.food++;
+        a.points++;
 
         window.gameInfo.pushSession(a);
     }
 
     useFood(c) {
         const a = window.gameInfo.gameSession;
-        if(a - c < 0) return false;
+        if(a.points - c < 0) return false;
 
-        a.food -= c;
+        a.points -= c;
         window.gameInfo.pushSession(a);
 
         return true;
@@ -407,6 +456,11 @@ class Player {
         return a;
     }
 
+    setCustomModel(n) {
+        this.currentModels = n;
+        this.currentFrame = 0;
+    }
+
     nextFrame() {
         if(this.lastAnimationDone) return;
 
@@ -441,28 +495,46 @@ class Player {
             leftFrames: at
         }
 
-        let inv = false; // invalid skill name
+        let inv = null;
 
         switch(sn) {
-            case 'SLIDE':
-                this.currentModels = "SLIDE_SKILL";
-                this.movespeed = this.#_bs / 2;
-                this.jumpHeight = this.#_bs / 8;
+            case 'ATTACK':
+                inv = () => {
+                    this.setCustomModel("ATTACK_SKILL");
+                    this.velocity -= this.jumpHeight;
 
-                o.outfunc = () => {
-                    this.movespeed = this.movespeedD;
-                    this.jumpHeight = this.jumpHeightD;
+                    const _a = this.skills.find(io => io.name === sn);
+                    this.drawRange = (
+                        (Array.isArray(_a.rangePack)) ? _a.rangePack[_a.level - 1] || _a.rangePack[0] : _a.rangePack
+                    );
+
+                    o.outfunc = () => {
+                        this.drawRange = false;
+                    }
+                }
+            break;
+            case 'SLIDE':
+                inv = () => {
+                    this.setCustomModel("SLIDE_SKILL");
+                    this.movespeed = this.#_bs / 2;
+                    this.jumpHeight = this.#_bs / 8;
+
+                    o.outfunc = () => {
+                        this.movespeed = this.movespeedD;
+                        this.jumpHeight = this.jumpHeightD;
+                    }
                 }
             break;
             default:
-                inv = true;
+                inv = null;
             break;
         }
 
-        if(!inv && this.useFood(pr)) {
+        if(inv && this.useFood(pr)) {
+            inv();
             this.usingSkill = true;
             this.usedSkills[sn] = o;
-        } else {
+        } else if(!inv) {
             console.error(`Invalid skill: ${ sn }`);
         }
     }
