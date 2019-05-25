@@ -38,7 +38,7 @@ class FallingItem extends Obstacle { // Food, Obstacle
                 this.speed = this.speed - this.speed / 100 * window.gameInfo.slowFallingObjects;
             }
             this.gravity = this.velocity = 0;
-        } else if(this.speed !== this.speedD) {
+        } else {
             this.slowMotion = false;
             this.speed = this.speedD;
             this.gravity = this.gravityD;
