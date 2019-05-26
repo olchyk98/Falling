@@ -33,7 +33,7 @@ class Player {
                 name: "REGENERATION",
                 displayName: "Regenerate",
                 borderType: "SAVE",
-                icon: window.gameAssets["SKILLS"].output["REGENERATION"][0],
+                icons: window.gameAssets["SKILLS"].output["REGENERATION"],
                 restorePack: [ // s
                     10,
                     9,
@@ -60,7 +60,7 @@ class Player {
                 name: "SLIDE",
                 displayName: "Slide",
                 borderType: "DEFAULT",
-                icon: window.gameAssets["SKILLS"].output["SLIDE"][0],
+                icons: window.gameAssets["SKILLS"].output["SLIDE"],
                 restorePack: [ // s
                     4,
                     5,
@@ -79,7 +79,7 @@ class Player {
                 name: "ATTACK",
                 displayName: "Attack",
                 borderType: "DAMAGE",
-                icon: window.gameAssets["SKILLS"].output["ATTACK"][0],
+                icons: window.gameAssets["SKILLS"].output["ATTACK"],
                 restorePack: [ // s
                     15,
                     20,
@@ -87,7 +87,7 @@ class Player {
                 ],
                 fireKeyCode: 104, // h
                 durationPack: 4, // s
-                usePrice: 5, // mana
+                usePrice: 30, // mana
                 updatePrice: [
                     40,
                     600
@@ -99,11 +99,11 @@ class Player {
                 ]
             },
             {
-                level: 0,
+                level: 1, // AND_SWW
                 name: "PENTAGRAM",
                 displayName: "Exorcism",
                 borderType: "DAMAGE",
-                icon: window.gameAssets["SKILLS"].output["PENTAGRAM"][0],
+                icons: window.gameAssets["SKILLS"].output["PENTAGRAM"],
                 restorePack: [ // s
                     30,
                     50,
@@ -122,11 +122,11 @@ class Player {
                 ]
             },
             {
-                level: 0,
+                level: 1, // AND_SWW
                 name: "SHIELD",
-                displayName: "Protect",
+                displayName: "Shield",
                 borderType: "SAVE",
-                icon: window.gameAssets["SKILLS"].output["SHIELD"][0],
+                icons: window.gameAssets["SKILLS"].output["SHIELD"],
                 restorePack: [ // s
                     10,
                     12,
@@ -150,14 +150,14 @@ class Player {
                 name: "SUMMON_METEOR",
                 displayName: "Meteoristic",
                 borderType: "DAMAGE",
-                icon: window.gameAssets["SKILLS"].output["METEOR"][0],
+                icons: window.gameAssets["SKILLS"].output["METEOR"],
                 restorePack: [ // s
                     30,
                     20,
                     10
                 ],
                 fireKeyCode: 108, // l
-                usePrice: 15, // mana
+                usePrice: 5, // mana
                 updatePrice: [
                     50,
                     400
@@ -168,7 +168,7 @@ class Player {
                 name: "RAGE",
                 displayName: "Rage",
                 borderType: "DAMAGE",
-                icon: window.gameAssets["SKILLS"].output["RAGE"][0],
+                icons: window.gameAssets["SKILLS"].output["RAGE"],
                 restorePack: [ // s
                     100,
                     80,
@@ -191,7 +191,7 @@ class Player {
                 name: "FREEZE_TIME",
                 displayName: "Freeze",
                 borderType: "DEFAULT",
-                icon: window.gameAssets["SKILLS"].output["FREEZE_TIME"][0],
+                icons: window.gameAssets["SKILLS"].output["FREEZE_TIME"],
                 restorePack: [ // s
                     30,
                     40,
@@ -215,11 +215,11 @@ class Player {
                 ]
             },
             {
-                level: 0,
+                level: 1, // AND_SWW
                 name: "NO_LIMITS",
                 displayName: "Infinity",
                 borderType: "DAMAGE",
-                icon: window.gameAssets["SKILLS"].output["FREEZE_TIME"][0],
+                icons: window.gameAssets["SKILLS"].output["NO_LIMITS"],
                 restorePack: [ // s
                     4,
                     8,
@@ -268,8 +268,8 @@ class Player {
                 strokeWeight(4);
                 stroke('rgba(255, 255, 255, .25)');
                 ellipse(
-                    this.pos.x + this.drawRange / 2 - this.dims.width / 2,
-                    this.pos.y + this.drawRange / 2 - this.dims.height / 2,
+                    this.pos.x + this.dims.width / 2,
+                    this.pos.y + this.dims.height / 2,
                     this.drawRange,
                     this.drawRange
                 );
@@ -551,10 +551,12 @@ class Player {
             break;
             case 'SLIDE':
                 inv = () => {
+                    const _a = fd();
+
                     this.updateModelsSkillController("SLIDE_SKILL", true);
                     this.setCustomModel("SLIDE_SKILL");
                     this.movespeed = this.#_bs / 2;
-                    this.jumpHeight = this.#_bs / 8;
+                    this.jumpHeight = gp(_a.rangePack, _a.level);
 
                     o.outfunc = () => {
                         this.movespeed = this.movespeedD;
@@ -589,6 +591,11 @@ class Player {
                     window.gameInfo.activeObjects.meteors.push(
                         new Meteor(this.pos)
                     );
+                }
+            break;
+            case 'SHIELD':
+                inv = () => {
+                    
                 }
             break;
             default:

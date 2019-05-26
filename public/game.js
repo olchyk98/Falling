@@ -629,7 +629,7 @@ function draw() {
 
         const skillsW = a => ( Number.isInteger(a) ? a : skills.length - 1 ) * (sis + smr);
         
-        skills.map(({ level, fireKeyCode, name, icon, restorePack, durationPack, usePrice, borderType, displayName }, index) => {
+        skills.map(({ level, fireKeyCode, name, icons, restorePack, durationPack, usePrice, borderType, displayName }, index) => {
             const x = innerWidth / 2 - cw / 2 + skillsW(index) + cw / 2 - skillsW() / 2 - sis / 2,
                   y = mt + fis + (hh + ibm * infoBars.length) + mt / 4 + gbe * 2;
 
@@ -654,7 +654,7 @@ function draw() {
                 );
                 // icon
                 image(
-                    icon,
+                    icons[level - 1] || icons[0],
                     x + sis / 7,
                     y + sis / 7,
                     sims,
