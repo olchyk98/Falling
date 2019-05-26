@@ -8,7 +8,7 @@ class Player {
         this.jumpHeight = this.jumpHeightD = this.#_bs / 3;
         this.movespeed = this.movespeedD = this.#_bs / 4;
 
-        this.maxHealth = this.health = this.previousHealth = this.currentHealth = 1e2;
+        this.maxHealth = this.health = this.previousHealth = this.currentHealth = Infinity; // 1e2
         this.maxMana = this.mana = this.previousMana = this.currentMana = 50;
 
         this.framesPerMana = this.manaFramesLeft = window.secondsToFrames(2);
@@ -147,7 +147,7 @@ class Player {
             },
             {
                 level: 1,
-                name: "METEOR",
+                name: "SUMMON_METEOR",
                 displayName: "Meteoristic",
                 borderType: "DAMAGE",
                 icon: window.gameAssets["SKILLS"].output["METEOR"][0],
@@ -312,7 +312,7 @@ class Player {
         this.movespeed = lerp(this.movespeed, this.movespeedD, .01);
         this.handleSkills();
 
-        if(this.currentMana <= this.maxMana && --this.manaFramesLeft <= 0) {
+        if(this.currentMana < this.maxMana && --this.manaFramesLeft <= 0) {
             this.manaFramesLeft = this.framesPerMana;
             this.currentMana++;
         }
@@ -582,6 +582,13 @@ class Player {
                             this.damage(-gp(_a.regeneratePack, _a.level));
                         }, ma * 1e3);
                     }
+                }
+            break;
+            case 'SUMMON_METEOR':
+                inv = () => {
+                    window.gameInfo.activeObjects.meteors.push(
+                        new Meteor(this.pos)
+                    );
                 }
             break;
             default:

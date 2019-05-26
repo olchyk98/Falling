@@ -7,6 +7,7 @@ window.importJS('./classes/Obstacle.js');
 window.importJS('./classes/Block.js');
 window.importJS('./classes/Player.js');
 window.importJS('./classes/FallingItem.js');
+window.importJS('./classes/Meteor.js');
 
 const spreadID = a => {
     let i = 0;
@@ -121,7 +122,7 @@ const gameAssets = window.gameAssets = spreadID({
         },
         output: null
     },
-    "ITEMS": {
+    "FOOD": {
         type: "LOADABLE_KEYS_MODEL_PACK",
         murl: {
             "BANANAS": './assets/items/bananas.png',
@@ -137,6 +138,143 @@ const gameAssets = window.gameAssets = spreadID({
             "WANDS": './assets/fallingblocks/wands.png',
             "SNOWBALL": './assets/fallingblocks/snowball.png',
             "ICE": './assets/fallingblocks/ice.png'
+        },
+        output: null
+    },
+    "ANIMATED_EFFECTS": {
+        type: "LOADABLE_KEYS_MODELS_PACK",
+        murl: {
+            "SHIELD": [
+                './assets/items/shield/shield1.png',
+                './assets/items/shield/shield2.png',
+                './assets/items/shield/shield3.png',
+                './assets/items/shield/shield4.png',
+                './assets/items/shield/shield5.png',
+                './assets/items/shield/shield6.png',
+                './assets/items/shield/shield7.png'
+            ],
+            "METEOR": [
+                './assets/items/asteroid/asteroid1.png',
+                './assets/items/asteroid/asteroid2.png',
+                './assets/items/asteroid/asteroid3.png',
+                './assets/items/asteroid/asteroid4.png',
+                './assets/items/asteroid/asteroid5.png',
+                './assets/items/asteroid/asteroid6.png',
+                './assets/items/asteroid/asteroid7.png',
+                './assets/items/asteroid/asteroid8.png',
+                './assets/items/asteroid/asteroid9.png',
+                './assets/items/asteroid/asteroid10.png',
+                './assets/items/asteroid/asteroid11.png',
+                './assets/items/asteroid/asteroid12.png',
+                './assets/items/asteroid/asteroid13.png',
+                './assets/items/asteroid/asteroid14.png',
+                './assets/items/asteroid/asteroid15.png',
+                './assets/items/asteroid/asteroid16.png',
+                './assets/items/asteroid/asteroid17.png',
+                './assets/items/asteroid/asteroid18.png',
+                './assets/items/asteroid/asteroid19.png',
+                './assets/items/asteroid/asteroid20.png',
+                './assets/items/asteroid/asteroid21.png',
+                './assets/items/asteroid/asteroid22.png',
+                './assets/items/asteroid/asteroid23.png',
+                './assets/items/asteroid/asteroid24.png',
+                './assets/items/asteroid/asteroid25.png',
+                './assets/items/asteroid/asteroid26.png',
+                './assets/items/asteroid/asteroid27.png',
+                './assets/items/asteroid/asteroid28.png',
+                './assets/items/asteroid/asteroid29.png',
+                './assets/items/asteroid/asteroid30.png',
+                './assets/items/asteroid/asteroid31.png',
+                './assets/items/asteroid/asteroid32.png',
+                './assets/items/asteroid/asteroid33.png',
+                './assets/items/asteroid/asteroid34.png',
+                './assets/items/asteroid/asteroid35.png',
+                './assets/items/asteroid/asteroid36.png',
+                './assets/items/asteroid/asteroid37.png',
+                './assets/items/asteroid/asteroid38.png',
+                './assets/items/asteroid/asteroid39.png',
+                './assets/items/asteroid/asteroid40.png',
+                './assets/items/asteroid/asteroid41.png',
+                './assets/items/asteroid/asteroid42.png',
+                './assets/items/asteroid/asteroid43.png',
+                './assets/items/asteroid/asteroid44.png',
+                './assets/items/asteroid/asteroid45.png',
+                './assets/items/asteroid/asteroid46.png',
+                './assets/items/asteroid/asteroid47.png',
+                './assets/items/asteroid/asteroid48.png',
+                './assets/items/asteroid/asteroid49.png',
+                './assets/items/asteroid/asteroid50.png',
+                './assets/items/asteroid/asteroid51.png',
+                './assets/items/asteroid/asteroid52.png',
+                './assets/items/asteroid/asteroid53.png',
+                './assets/items/asteroid/asteroid54.png',
+                './assets/items/asteroid/asteroid55.png',
+                './assets/items/asteroid/asteroid56.png',
+                './assets/items/asteroid/asteroid57.png',
+                './assets/items/asteroid/asteroid58.png',
+                './assets/items/asteroid/asteroid59.png',
+                './assets/items/asteroid/asteroid60.png',
+                './assets/items/asteroid/asteroid61.png',
+                './assets/items/asteroid/asteroid62.png',
+                './assets/items/asteroid/asteroid63.png',
+                './assets/items/asteroid/asteroid64.png',
+                './assets/items/asteroid/asteroid65.png',
+                './assets/items/asteroid/asteroid66.png',
+                './assets/items/asteroid/asteroid67.png',
+                './assets/items/asteroid/asteroid68.png',
+                './assets/items/asteroid/asteroid69.png',
+                './assets/items/asteroid/asteroid70.png',
+                './assets/items/asteroid/asteroid71.png',
+                './assets/items/asteroid/asteroid72.png',
+                './assets/items/asteroid/asteroid73.png',
+                './assets/items/asteroid/asteroid74.png',
+                './assets/items/asteroid/asteroid75.png',
+                './assets/items/asteroid/asteroid76.png',
+                './assets/items/asteroid/asteroid77.png',
+                './assets/items/asteroid/asteroid78.png',
+                './assets/items/asteroid/asteroid79.png',
+                './assets/items/asteroid/asteroid80.png',
+                './assets/items/asteroid/asteroid81.png',
+                './assets/items/asteroid/asteroid82.png',
+                './assets/items/asteroid/asteroid83.png',
+                './assets/items/asteroid/asteroid84.png',
+                './assets/items/asteroid/asteroid85.png',
+                './assets/items/asteroid/asteroid86.png',
+                './assets/items/asteroid/asteroid87.png',
+                './assets/items/asteroid/asteroid88.png',
+                './assets/items/asteroid/asteroid89.png',
+                './assets/items/asteroid/asteroid90.png',
+                './assets/items/asteroid/asteroid91.png',
+                './assets/items/asteroid/asteroid92.png',
+                './assets/items/asteroid/asteroid93.png',
+                './assets/items/asteroid/asteroid94.png',
+                './assets/items/asteroid/asteroid95.png',
+                './assets/items/asteroid/asteroid96.png',
+                './assets/items/asteroid/asteroid97.png',
+                './assets/items/asteroid/asteroid98.png',
+                './assets/items/asteroid/asteroid99.png',
+                './assets/items/asteroid/asteroid100.png',
+                './assets/items/asteroid/asteroid101.png',
+                './assets/items/asteroid/asteroid102.png',
+                './assets/items/asteroid/asteroid103.png',
+                './assets/items/asteroid/asteroid104.png',
+                './assets/items/asteroid/asteroid105.png',
+                './assets/items/asteroid/asteroid106.png',
+                './assets/items/asteroid/asteroid107.png',
+                './assets/items/asteroid/asteroid108.png',
+                './assets/items/asteroid/asteroid109.png',
+                './assets/items/asteroid/asteroid110.png',
+                './assets/items/asteroid/asteroid111.png',
+                './assets/items/asteroid/asteroid112.png',
+                './assets/items/asteroid/asteroid113.png',
+                './assets/items/asteroid/asteroid114.png',
+                './assets/items/asteroid/asteroid115.png',
+                './assets/items/asteroid/asteroid116.png',
+                './assets/items/asteroid/asteroid117.png',
+                './assets/items/asteroid/asteroid118.png',
+                './assets/items/asteroid/asteroid119.png',
+                './assets/items/asteroid/asteroid120.png'
+            ]
         },
         output: null
     },
@@ -227,7 +365,8 @@ const gameInfo = window.gameInfo = {
     blockSize: innerWidth / map[0].length,
     activeObjects: {
         player: null,
-        fallingItems: []
+        fallingItems: [],
+        meteors: []
     },
     slowFallingObjects: false, // false || %
     nextBlock: Infinity, // time to next falling block
@@ -252,7 +391,7 @@ const gameInfo = window.gameInfo = {
     })()
 }
 
-this.nextblockID = 0;
+window.nextblockID = window.nextMeteorID = 0;
 
 const secondsToFrames = window.secondsToFrames = (s = 1) => 60 / gameInfo.canvas.frameRate * 60 * s;
 
@@ -286,7 +425,7 @@ function handleNextBlock() {
                     )
                 );
             } else { // points
-                const mod = o(Object.values(gameAssets["ITEMS"].output)),
+                const mod = o(Object.values(gameAssets["FOOD"].output)),
                       size = 50;
 
                 gameInfo.activeObjects.fallingItems.push(
@@ -420,7 +559,7 @@ function draw() {
 
         // Food
         image(
-            gameAssets["ITEMS"].output["BANANAS"],
+            gameAssets["FOOD"].output["BANANAS"],
             innerWidth / 2 - fis / 2 - cfg,
             mt,
             fis,
@@ -591,6 +730,9 @@ function draw() {
 
     // Draw falling blocks
     for(let ma of gameInfo.activeObjects.fallingItems) ma.update().render();
+
+    // Draw meteors
+    for(let ma of gameInfo.activeObjects.meteors) ma.update().render();
 }
 
 function keyPressed() {
