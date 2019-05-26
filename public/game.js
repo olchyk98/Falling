@@ -408,7 +408,8 @@ function draw() {
     // Draw status bar
     {
         let cw = 400, // Container width
-            hh = 20, // health bar height 
+            hh = 15, // info bar height 
+            ibm = 5, // info bars margin
             mt = 20, // margin top
             fis = 25, // points icon size
             gbe = 12.5, // gap between elements
@@ -433,37 +434,56 @@ function draw() {
             mt + fis / 2 + 5
         );
 
-        // Health
-        const playerHealth = window.gameInfo.activeObjects.player.getHealth();
+        // Health & Mana
+        const playerStats = window.gameInfo.activeObjects.player.getStats();
 
-        push();
-            noStroke();
-            fill('rgba(0, 0, 0, .2)');
-            rect(
-                innerWidth / 2 - cw / 2,
-                mt + fis + gbe,
-                cw,
-                hh
-            );
-            fill('rgba(255, 0, 0, .85)');
+        const infoBars = [
             {
-                const _mh = 1 - playerHealth.current / playerHealth.max;
+                name: "hp",
+                infoContainer: playerStats.health,
+                colorBar: "rgba(255, 0, 0, .85)",
+                colorText: "white"
+            },
+            {
+                name: "mana",
+                infoContainer: playerStats.mana,
+                colorBar: "rgba(0, 0, 255, .85)",
+                colorText: "white"
+            }
+        ];
+
+        infoBars.forEach(({ name, infoContainer, colorBar, colorText }, index) => {
+            const _y = mt + fis + gbe + (hh + ibm) * index;
+
+            push();
+                noStroke();
+                fill('rgba(0, 0, 0, .2)');
                 rect(
                     innerWidth / 2 - cw / 2,
-                    mt + fis + gbe,
-                    cw - cw * ((_mh > 0) ? _mh : 0),
+                    _y,
+                    cw,
                     hh
                 );
-            }
-            textSize(12.5);
-            fill('white');
-            textAlign(CENTER);
-            text(
-                `${ floor(playerHealth.current) }hp (${ floor(playerHealth.current / playerHealth.max * 100) }%)`,
-                innerWidth / 2,
-                mt + fis + gbe + hh / 2 + 4.5
-            );
-        pop();
+                fill(colorBar);
+                {
+                    const _mh = 1 - infoContainer.current / infoContainer.max;
+                    rect(
+                        innerWidth / 2 - cw / 2,
+                        _y,
+                        cw - cw * ((_mh > 0) ? _mh : 0),
+                        hh
+                    );
+                }
+                textSize(12.5);
+                fill(colorText);
+                textAlign(CENTER);
+                text(
+                    `${ floor(infoContainer.current) }${ name } (${ floor(infoContainer.current / infoContainer.max * 100) }%)`,
+                    innerWidth / 2,
+                    _y + hh / 2 + 4.5
+                );
+            pop();
+        });
 
         // Skills
         const skills = window.gameInfo.activeObjects.player.skills.filter(io => io.level);
@@ -472,7 +492,7 @@ function draw() {
         
         skills.map(({ level, fireKeyCode, name, icon, restorePack, durationPack, usePrice, borderType, displayName }, index) => {
             const x = innerWidth / 2 - cw / 2 + skillsW(index) + cw / 2 - skillsW() / 2 - sis / 2,
-                  y = mt + fis + hh + gbe * 2;
+                  y = mt + fis + (hh + ibm * infoBars.length) + mt / 4 + gbe * 2;
 
             push();
                 // cover
@@ -534,8 +554,9 @@ function draw() {
                     x + sis / 2,
                     y + sis + 12.5 + 5
                 );
+                fill( (playerStats.mana.real - usePrice >= 0) ? 'white' : 'rgba(255, 255, 255, .25)' )
                 text(
-                    `${ usePrice } 🍌`,
+                    `${ usePrice } 🧵`,
                     x + sis / 2,
                     y + sis + 12.5 + 25
                 );

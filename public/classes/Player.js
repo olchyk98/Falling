@@ -8,7 +8,11 @@ class Player {
         this.jumpHeight = this.jumpHeightD = this.#_bs / 3;
         this.movespeed = this.movespeedD = this.#_bs / 4;
 
-        this.maxHealth = this.health = this.previousHealth = this.currentHealth = 1e7;
+        this.maxHealth = this.health = this.previousHealth = this.currentHealth = 1e2;
+        this.maxMana = this.mana = this.previousMana = this.currentMana = 50;
+
+        this.framesPerMana = this.manaFramesLeft = window.secondsToFrames(2);
+
         this.isDead = false;
 
         // Pos
@@ -22,6 +26,7 @@ class Player {
 
         this.usedSkills = {} // [name]: { startFrame, leftFrames }
         this.usingSkill = false;
+        this.skillModels = [];
         this.#availableSkills = [
             {
                 level: 1,
@@ -37,11 +42,17 @@ class Player {
                 ],
                 fireKeyCode: 102, // f
                 durationPack: 4, // s
-                usePrice: 5, // bananas
+                usePrice: 5, // mana
                 updatePrice: [
                     80,
                     150,
                     250
+                ],
+                regeneratePack: [
+                    5,
+                    15,
+                    25,
+                    35
                 ]
             },
             {
@@ -57,7 +68,7 @@ class Player {
                 ],
                 fireKeyCode: 103, // g
                 durationPack: 2, // s
-                usePrice: 1, // bananas
+                usePrice: 1, // mana
                 updatePrice: [
                     50,
                     250
@@ -76,7 +87,7 @@ class Player {
                 ],
                 fireKeyCode: 104, // h
                 durationPack: 4, // s
-                usePrice: 5, // bananas
+                usePrice: 5, // mana
                 updatePrice: [
                     40,
                     600
@@ -99,7 +110,7 @@ class Player {
                     60
                 ],
                 fireKeyCode: 106, // j
-                usePrice: 10, // bananas
+                usePrice: 10, // mana
                 updatePrice: [
                     400,
                     800
@@ -123,7 +134,7 @@ class Player {
                 ],
                 fireKeyCode: 107, // k
                 durationPack: 2, // s
-                usePrice: 4, // bananas
+                usePrice: 4, // mana
                 updatePrice: [
                     60,
                     500
@@ -146,7 +157,7 @@ class Player {
                     10
                 ],
                 fireKeyCode: 108, // l
-                usePrice: 15, // bananas
+                usePrice: 15, // mana
                 updatePrice: [
                     50,
                     400
@@ -169,7 +180,7 @@ class Player {
                     7,
                     10
                 ],
-                usePrice: 50, // bananas
+                usePrice: 50, // mana
                 updatePrice: [
                     400,
                     1250
@@ -192,7 +203,7 @@ class Player {
                     7,
                     8
                 ],
-                usePrice: 15, // bananas
+                usePrice: 15, // mana
                 updatePrice: [
                     100,
                     600
@@ -220,7 +231,7 @@ class Player {
                     8,
                     100
                 ],
-                usePrice: 100, // bananas
+                usePrice: 100, // mana
                 updatePrice: [
                     800,
                     2000
@@ -297,8 +308,14 @@ class Player {
 
     update() {
         this.health = lerp(this.health, this.currentHealth, .25);
+        this.mana = lerp(this.mana, this.currentMana, .25);
         this.movespeed = lerp(this.movespeed, this.movespeedD, .01);
         this.handleSkills();
+
+        if(this.currentMana <= this.maxMana && --this.manaFramesLeft <= 0) {
+            this.manaFramesLeft = this.framesPerMana;
+            this.currentMana++;
+        }
 
         if (--this.framesToUpdate <= 0) {
             this.framesToUpdate = this.framesToUpdateD;
@@ -396,6 +413,12 @@ class Player {
         return true;
     }
 
+    useMana(c) {
+        if(this.currentMana - c < 0) return false;
+        this.currentMana -= c;
+        return true;
+    }
+
     jump() {
         if (this.velocity || this.isDead) return;
 
@@ -420,6 +443,8 @@ class Player {
         if(this.currentHealth < 0) {
             this.currentHealth = 0;
             this.die();
+        } else if(this.currentHealth > this.maxHealth) {
+            this.currentHealth = this.maxHealth;
         }
     }
 
@@ -434,7 +459,7 @@ class Player {
     }
 
     updateModel() {
-        if(this.usingSkill) return; // curr models handle by useSkill() func
+        if(this.skillModels.length) return; // curr models handle by useSkill() func
 
         let a = this.currentModels;
 
@@ -481,14 +506,22 @@ class Player {
         return this;
     }
 
-    getHealth() {
+    getStats() {
         return ({
-            max: this.maxHealth,
-            current: this.health
+            health: {
+                max: this.maxHealth,
+                current: this.health,
+                real: this.currentHealth
+            },
+            mana: {
+                max: this.maxMana,
+                current: this.mana,
+                real: this.currentMana
+            }
         });
     }
 
-    useSkill(sn, at, pr) { // @sn:> Skill name, @at:> Active time, @pr: Use price
+    useSkill(sn, at, pr) { // @sn:> Skill name, @at:> Active time, @pr: Use price (mana)
         // Idea: check if requesting skill is reloading
         const o = {
             startFrame: frameCount,
@@ -503,19 +536,22 @@ class Player {
         switch(sn) {
             case 'ATTACK':
                 inv = () => {
+                    this.updateModelsSkillController("ATTACK_SKILL", true);
                     this.setCustomModel("ATTACK_SKILL");
-                    this.velocity -= this.jumpHeight;
+                    if(!this.velocity) this.velocity -= this.jumpHeight;
 
                     const _a = fd();
                     this.drawRange = gp(_a.rangePack, _a.level);
 
                     o.outfunc = () => {
                         this.drawRange = false;
+                        this.updateModelsSkillController("ATTACK_SKILL", false);
                     }
                 }
             break;
             case 'SLIDE':
                 inv = () => {
+                    this.updateModelsSkillController("SLIDE_SKILL", true);
                     this.setCustomModel("SLIDE_SKILL");
                     this.movespeed = this.#_bs / 2;
                     this.jumpHeight = this.#_bs / 8;
@@ -523,6 +559,7 @@ class Player {
                     o.outfunc = () => {
                         this.movespeed = this.movespeedD;
                         this.jumpHeight = this.jumpHeightD;
+                        this.updateModelsSkillController("SLIDE_SKILL", false);
                     }
                 }
             break;
@@ -536,12 +573,23 @@ class Player {
                     }
                 }
             break;
+            case 'REGENERATION':
+                inv = () => {
+                    const _a = fd();
+
+                    for(let ma = 1; ma <= gp(_a.durationPack, _a.durationPack); ma++) {
+                        setTimeout(() => {
+                            this.damage(-gp(_a.regeneratePack, _a.level));
+                        }, ma * 1e3);
+                    }
+                }
+            break;
             default:
                 inv = null;
             break;
         }
 
-        if(inv && this.useFood(pr)) {
+        if(inv && this.useMana(pr)) {
             inv();
             this.usingSkill = true;
             this.usedSkills[sn] = o;
@@ -575,5 +623,13 @@ class Player {
 
     get skills() {
         return this.#availableSkills;
+    }
+
+    updateModelsSkillController(n, a) { // @n: Name, @a: Add
+        if(a) { // add
+            if(!this.skillModels.includes(n)) this.skillModels.push(n);
+        } else { // remove
+            this.skillModels = this.skillModels.filter(io => io !== n);
+        }
     }
 }
