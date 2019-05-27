@@ -8,7 +8,7 @@ class Player {
         this.jumpHeight = this.jumpHeightD = this.#_bs / 3;
         this.movespeed = this.movespeedD = this.#_bs / 4;
 
-        this.maxHealth = this.health = this.previousHealth = this.currentHealth = Infinity; // 1e2
+        this.maxHealth = this.health = this.previousHealth = this.currentHealth = 1e2; // Infinity
         this.maxMana = this.mana = this.previousMana = this.currentMana = 50;
 
         this.framesPerMana = this.manaFramesLeft = window.secondsToFrames(2);
@@ -133,7 +133,7 @@ class Player {
                     15
                 ],
                 fireKeyCode: 107, // k
-                durationPack: 2, // s
+                durationPack: 8, // s
                 usePrice: 4, // mana
                 updatePrice: [
                     60,
@@ -237,7 +237,14 @@ class Player {
                     2000
                 ]
             },
-        ]
+        ];
+
+        this.shieldActive = false;
+        this.shieldModels = window.gameAssets["ANIMATED_EFFECTS"].output["SHIELD"];
+        this.shieldFrame = 0;
+        this.shieldModelSize = this.#_bs * 2;
+        this.shieldFrameNext = this.shieldFrameNextD = 5;
+        this.shieldMinus = 0; // %
 
         // Dims
         this.dims = {
@@ -251,7 +258,7 @@ class Player {
         this.currentFrame = 0;
         this.lastAnimation = this.lastAnimationDone = false;
         this.framesToUpdate = this.framesToUpdateD = 10; // time to frame update & default
-        this.drawRange = false;
+        this.drawRange = 0;
 
         // Blocks and Player have different values of gravity
         this.velocity = 0;
@@ -260,6 +267,28 @@ class Player {
 
     render() {
         const m = this.models[this.currentModels][this.currentFrame];
+
+        // Draw shield
+        if(this.shieldActive) {
+            if(--this.shieldFrameNext <= 0) {
+                this.shieldFrameNext = this.shieldFrameNextD;
+                this.shieldFrame++;
+                if(this.shieldFrame > this.shieldModels.length - 1) {
+                    this.shieldFrame = 0;
+                }
+            }
+
+            image(
+                this.shieldModels[this.shieldFrame],
+                this.pos.x - this.dims.width / 2,
+                this.pos.y - this.dims.height / 2,
+                this.shieldModelSize,
+                this.shieldModelSize
+            );
+        } else if(this.shieldFrame !== 0 || this.shieldFrameNext !== this.shieldFrameNextD) {
+            this.shieldFrame = 0;
+            this.shieldFrameNext = this.shieldFrameNextD;
+        }
 
         if(this.drawRange) {
             push();
@@ -365,9 +394,9 @@ class Player {
                 if(io.touchAction) io.touchAction(this);
             }
 
-            // Test for attack
+            // Test for attack & defend
             if(
-                this.drawRange &&
+                (this.drawRange || this.shield) &&
                 io instanceof FallingItem &&
                 io.type === "OBSTACLE" &&
                 io.checkTouch(
@@ -439,7 +468,9 @@ class Player {
         if(this.isDead) return;
 
         this.previousHealth = this.health;
-        this.currentHealth = this.health - d;
+
+        this.currentHealth = this.health - ( (!this.shieldActive) ? d : d / 100 * this.shieldMinus );
+
         if(this.currentHealth < 0) {
             this.currentHealth = 0;
             this.die();
@@ -544,7 +575,7 @@ class Player {
                     this.drawRange = gp(_a.rangePack, _a.level);
 
                     o.outfunc = () => {
-                        this.drawRange = false;
+                        this.drawRange = 0;
                         this.updateModelsSkillController("ATTACK_SKILL", false);
                     }
                 }
@@ -595,7 +626,15 @@ class Player {
             break;
             case 'SHIELD':
                 inv = () => {
-                    
+                    const _a = fd();
+
+                    this.shieldMinus = gp(_a.damageReduce, _a.level);
+                    this.shieldActive = true;
+
+                    o.outfunc = () => {
+                        this.shieldMinus = 0;
+                        this.shieldActive = false;
+                    }
                 }
             break;
             default:
