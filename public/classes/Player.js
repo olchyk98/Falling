@@ -8,7 +8,7 @@ class Player {
         this.jumpHeight = this.jumpHeightD = this.#_bs / 3;
         this.movespeed = this.movespeedD = this.#_bs / 4;
 
-        this.maxHealth = this.health = this.previousHealth = this.currentHealth = 1e2; // Infinity
+        this.maxHealth = this.health = this.previousHealth = this.currentHealth = this.lastHealthInfinity = 100;
         this.maxMana = this.mana = this.previousMana = this.currentMana = this.lastManaInfinity = 100;
 
         this.framesPerMana = this.manaFramesLeft = window.secondsToFrames(2);
@@ -72,6 +72,11 @@ class Player {
                 updatePrice: [
                     50,
                     250
+                ],
+                jumpHeight: [
+                    this.#_bs / 10,
+                    this.#_bs / 8,
+                    this.#_bs / 6
                 ]
             },
             {
@@ -198,9 +203,9 @@ class Player {
                 borderType: "DAMAGE",
                 icons: window.gameAssets["SKILLS"].output["NO_LIMITS"],
                 restorePack: [ // s
-                    4,
-                    8,
-                    200
+                    30,
+                    60,
+                    800
                 ],
                 fireKeyCode: 112, // p
                 durationPack: [ // s
@@ -451,7 +456,7 @@ class Player {
     }
 
     damage(d) {
-        if(this.isDead) return;
+        if(this.isDead || this.currentHealth === Infinity) return;
 
         this.previousHealth = this.health;
 
@@ -573,7 +578,7 @@ class Player {
                     this.updateModelsSkillController("SLIDE_SKILL", true);
                     this.setCustomModel("SLIDE_SKILL");
                     this.movespeed = this.#_bs / 2;
-                    this.jumpHeight = gp(_a.rangePack, _a.level);
+                    this.jumpHeight = gp(_a.jumpHeight, _a.level);
 
                     o.outfunc = () => {
                         this.movespeed = this.movespeedD;
@@ -640,6 +645,8 @@ class Player {
                     this.movespeed = this.#_bs / 2;
 
                     this.shieldActive = true;
+                    this.lastHealthInfinity = this.currentHealth;
+                    this.currentHealth = this.health = Infinity;
 
                     this.gravity = .85;
 
@@ -650,6 +657,7 @@ class Player {
 
                         this.shieldMinus = 0;
                         this.shieldActive = false;
+                        this.currentHealth = this.health = this.lastHealthInfinity;
 
                         this.gravity = this.gravityD;
                     }

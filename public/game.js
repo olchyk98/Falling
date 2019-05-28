@@ -356,6 +356,7 @@ const gameInfo = window.gameInfo = {
         width: innerWidth,
         frameRate: 60
     },
+    gameLevel: 2, // 0 - PASSIVE, 1 - EASY, 2 - STANDARD, 3 - HARD, 4 - IMPOSIBLE, 5 - HELL
     blockSize: innerWidth / map[0].length,
     activeObjects: {
         player: null,
@@ -389,30 +390,57 @@ window.nextblockID = window.nextMeteorID = 0;
 
 const secondsToFrames = window.secondsToFrames = (s = 1) => 60 / gameInfo.canvas.frameRate * 60 * s;
 
+//// TODO: LEVELING: seconds per food, block spawn speed
+
 function handleNextBlock() {
     if(!window.gameInfo.active) return;
 
     const a = gameInfo.nextBlock;
 
     if((a === Infinity || a <= 0) && !window.gameInfo.slowFallingObjects) {
-        gameInfo.nextBlock = random(
-            secondsToFrames(.25),
-            secondsToFrames()
-        );
+        let nbs = [
+            [
+                Infinity,
+                Infinity
+            ],
+            [
+                secondsToFrames(.65),
+                secondsToFrames()
+            ],
+            [
+                secondsToFrames(.25),
+                secondsToFrames()
+            ],
+            [
+                secondsToFrames(.15),
+                secondsToFrames()
+            ],
+            [
+                secondsToFrames(.15),
+                secondsToFrames(.75)
+            ],
+            [
+                secondsToFrames(.1),
+                secondsToFrames(.5)
+            ]
+        ][window.gameInfo.gameLevel];
+
+        gameInfo.nextBlock = random(nbs[0], nbs[1]);
 
         if(a <= 0) {
             const o = o => o[floor(random(o.length))];
 
-            if(random(false, true) <= .95) { // obstacle // LEVELING
-                const size = random(150, 200), // LEVELING
-                      mod = o(Object.values(gameAssets["FALLING_ITEMS"].output));
+            if(random(false, true) <= .95) { // obstacle
+                const size = random(150, 200),
+                      mod = o(Object.values(gameAssets["FALLING_ITEMS"].output)),
+                      speed = [[0, 0], [1, 7], [10, 15], [15, 20], [25, 30], [30, 40]][window.gameInfo.gameLevel];
 
                 gameInfo.activeObjects.fallingItems.push(
                     new FallingItem(
                         size, size,
                         random(0, innerWidth - size),
                         -size,
-                        random(10, 15), // speed // LEVELING
+                        random(speed[0], speed[1]), // speed // LEVELING
                         "OBSTACLE",
                         mod,
                         this.nextblockID++
