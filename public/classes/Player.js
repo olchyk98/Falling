@@ -9,7 +9,7 @@ class Player {
         this.movespeed = this.movespeedD = this.#_bs / 4;
 
         this.maxHealth = this.health = this.previousHealth = this.currentHealth = 1e2; // Infinity
-        this.maxMana = this.mana = this.previousMana = this.currentMana = 50;
+        this.maxMana = this.mana = this.previousMana = this.currentMana = this.lastManaInfinity = 100;
 
         this.framesPerMana = this.manaFramesLeft = window.secondsToFrames(2);
 
@@ -96,29 +96,6 @@ class Player {
                     this.#_bs * 2,
                     this.#_bs * 4,
                     this.#_bs * 6
-                ]
-            },
-            {
-                level: 1, // AND_SWW
-                name: "PENTAGRAM",
-                displayName: "Exorcism",
-                borderType: "DAMAGE",
-                icons: window.gameAssets["SKILLS"].output["PENTAGRAM"],
-                restorePack: [ // s
-                    30,
-                    50,
-                    60
-                ],
-                fireKeyCode: 106, // j
-                usePrice: 10, // mana
-                updatePrice: [
-                    400,
-                    800
-                ],
-                blocksPack: [ // destroys blocks # limit 
-                    4,
-                    8,
-                    Infinity
                 ]
             },
             {
@@ -242,7 +219,7 @@ class Player {
         this.shieldActive = false;
         this.shieldModels = window.gameAssets["ANIMATED_EFFECTS"].output["SHIELD"];
         this.shieldFrame = 0;
-        this.shieldModelSize = this.#_bs * 2;
+        this.shieldModelSize = this.#_bs * 4;
         this.shieldFrameNext = this.shieldFrameNextD = 5;
         this.shieldMinus = 0; // %
 
@@ -280,8 +257,8 @@ class Player {
 
             image(
                 this.shieldModels[this.shieldFrame],
-                this.pos.x - this.dims.width / 2,
-                this.pos.y - this.dims.height / 2,
+                this.pos.x - this.shieldModelSize / 2 + this.dims.width / 2,
+                this.pos.y - this.shieldModelSize / 2 + this.dims.height / 2,
                 this.shieldModelSize,
                 this.shieldModelSize
             );
@@ -634,6 +611,16 @@ class Player {
                     o.outfunc = () => {
                         this.shieldMinus = 0;
                         this.shieldActive = false;
+                    }
+                }
+            break;
+            case 'NO_LIMITS':
+                inv = () => {
+                    this.lastManaInfinity = this.currentMana;
+                    this.currentMana = this.mana = Infinity;
+
+                    o.outfunc = () => {
+                        this.currentMana = this.mana = this.lastManaInfinity;
                     }
                 }
             break;

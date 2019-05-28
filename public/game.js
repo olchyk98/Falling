@@ -150,8 +150,7 @@ const gameAssets = window.gameAssets = spreadID({
                 './assets/items/shield/shield3.png',
                 './assets/items/shield/shield4.png',
                 './assets/items/shield/shield5.png',
-                './assets/items/shield/shield6.png',
-                './assets/items/shield/shield7.png'
+                './assets/items/shield/shield6.png'
             ],
             "METEOR": [
                 './assets/items/asteroid/asteroid1.png',
@@ -309,11 +308,6 @@ const gameAssets = window.gameAssets = spreadID({
                 './assets/skills/main/shield1.png',
                 './assets/skills/main/shield2.png',
                 './assets/skills/main/shield3.png'
-            ],
-            "PENTAGRAM": [
-                './assets/skills/main/pentagram1.png',
-                './assets/skills/main/pentagram2.png',
-                './assets/skills/main/pentagram3.png'
             ],
             "FREEZE_TIME": [
                 './assets/skills/main/slowtime1.png',
@@ -578,12 +572,14 @@ function draw() {
 
         const infoBars = [
             {
+                ccName: "HEALTH",
                 name: "hp",
                 infoContainer: playerStats.health,
                 colorBar: "rgba(255, 0, 0, .85)",
                 colorText: "white"
             },
             {
+                ccName: "MANA",
                 name: "mana",
                 infoContainer: playerStats.mana,
                 colorBar: "rgba(0, 0, 255, .85)",
@@ -591,7 +587,7 @@ function draw() {
             }
         ];
 
-        infoBars.forEach(({ name, infoContainer, colorBar, colorText }, index) => {
+        infoBars.forEach(({ ccName, name, infoContainer, colorBar, colorText }, index) => {
             const _y = mt + fis + gbe + (hh + ibm) * index;
 
             push();
@@ -616,8 +612,13 @@ function draw() {
                 textSize(12.5);
                 fill(colorText);
                 textAlign(CENTER);
+
+                let _text = `${ floor(infoContainer.current) }${ name } (${ floor(infoContainer.current / infoContainer.max * 100) }%)`;
+
+                if(infoContainer.real === Infinity) _text = `∞ ${ name }`;
+
                 text(
-                    `${ floor(infoContainer.current) }${ name } (${ floor(infoContainer.current / infoContainer.max * 100) }%)`,
+                    _text,
                     innerWidth / 2,
                     _y + hh / 2 + 4.5
                 );
@@ -693,12 +694,14 @@ function draw() {
                     x + sis / 2,
                     y + sis + 12.5 + 5
                 );
-                fill( (playerStats.mana.real - usePrice >= 0) ? 'white' : 'rgba(255, 255, 255, .25)' )
-                text(
-                    `${ usePrice } 🧵`,
-                    x + sis / 2,
-                    y + sis + 12.5 + 25
-                );
+                if(playerStats.mana.real !== Infinity) {
+                    fill( (playerStats.mana.real - usePrice >= 0) ? 'white' : 'rgba(255, 255, 255, .25)' )
+                    text(
+                        `${ usePrice } 🧵`,
+                        x + sis / 2,
+                        y + sis + 12.5 + 25
+                    );
+                }
 
                 // listen for action
                 if(
