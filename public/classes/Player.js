@@ -223,6 +223,9 @@ class Player {
         this.shieldFrameNext = this.shieldFrameNextD = 5;
         this.shieldMinus = 0; // %
 
+        this.isBlinking = false;
+        this.blinkingTO = this.blinkingTOD = 1;
+
         // Dims
         this.dims = {
             width: .9 * this.#_bs,
@@ -239,7 +242,7 @@ class Player {
 
         // Blocks and Player have different values of gravity
         this.velocity = 0;
-        this.gravity = .75;
+        this.gravity = this.gravityD = .75;
     }
 
     render() {
@@ -282,31 +285,33 @@ class Player {
             pop();
         }
 
-        if(this.dirX === -1) {
-            image(
-                m,
-                this.pos.x,
-                this.pos.y,
-                this.dims.width,
-                this.dims.height
-            );
-        } else if(this.dirX === 1) {
-            push();
-                translate(
-                    m.width + this.pos.x + this.dims.width / 2,
-                    this.pos.y
-                );
-                scale(-1, 1);
+        if(!this.isBlinking || this.blinkingTO !== 0) {
+            if(this.dirX === -1) {
                 image(
                     m,
-                    0,
-                    0,
+                    this.pos.x,
+                    this.pos.y,
                     this.dims.width,
                     this.dims.height
                 );
-            pop();
-        } else {
-            console.error("Invalid dirX value");
+            } else if(this.dirX === 1) {
+                push();
+                    translate(
+                        m.width + this.pos.x + this.dims.width / 2,
+                        this.pos.y
+                    );
+                    scale(-1, 1);
+                    image(
+                        m,
+                        0,
+                        0,
+                        this.dims.width,
+                        this.dims.height
+                    );
+                pop();
+            } else {
+                console.error("Invalid dirX value");
+            }
         }
 
         return this;
@@ -317,6 +322,10 @@ class Player {
         this.mana = lerp(this.mana, this.currentMana, .25);
         this.movespeed = lerp(this.movespeed, this.movespeedD, .01);
         this.handleSkills();
+
+        if(this.isBlinking && --this.blinkingTO < 0) { // not <= 0!
+            this.blinkingTO = this.blinkingTOD;
+        }
 
         if(this.currentMana < this.maxMana && --this.manaFramesLeft <= 0) {
             this.manaFramesLeft = this.framesPerMana;
@@ -621,6 +630,28 @@ class Player {
 
                     o.outfunc = () => {
                         this.currentMana = this.mana = this.lastManaInfinity;
+                    }
+                }
+            break;
+            case 'RAGE':
+                inv = () => {
+                    this.isBlinking = true;
+
+                    this.movespeed = this.#_bs / 2;
+
+                    this.shieldActive = true;
+
+                    this.gravity = .85;
+
+                    o.outfunc = () => {
+                        this.isBlinking = false;
+
+                        this.movespeed = this.movespeedD;
+
+                        this.shieldMinus = 0;
+                        this.shieldActive = false;
+
+                        this.gravity = this.gravityD;
                     }
                 }
             break;
