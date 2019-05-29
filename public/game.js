@@ -116,9 +116,11 @@ const gameAssets = window.gameAssets = spreadID({
     "BACKGROUNDS": {
         type: "LOADABLE_KEYS_MODEL_PACK",
         murl: {
-            "SNOW": './assets/backgrounds/background1.png',
-            "GREEN_TREES": './assets/backgrounds/background2.png',
-            "CANDY_CASTLE": './assets/backgrounds/background3.png'
+            "SUNSET": './assets/backgrounds/bg2.png',
+            "MOUNTAINS": './assets/backgrounds/bg3.png',
+            "MOUNTAINS_LOW": './assets/backgrounds/bg4.png',
+            "NIGHT_FOREST": './assets/backgrounds/bg5.png',
+            "PHONTANO": './assets/backgrounds/bg6.png'
         },
         output: null
     },
@@ -330,6 +332,32 @@ const gameAssets = window.gameAssets = spreadID({
             "SAVE": './assets/skills/frames/save.png'
         },
         output: null
+    },
+    "BUTTONS": {
+        type: "LOADABLE_KEYS_MODEL_PACK",
+        murl: {
+            "BLUE_BORDERED": './assets/buttons/1.png', 
+            "ROUNDED_SAPHIRE": './assets/buttons/2.png', 
+            "GRAY_BOX": './assets/buttons/3.png', 
+            "BUBLES_ORANGE": './assets/buttons/4.png', 
+            "WOOD": './assets/buttons/5.png', 
+            "STONE": './assets/buttons/6.png', 
+            "SPACE_BLUE": './assets/buttons/7.png',
+            "GREEN_SLIME": './assets/buttons/8.png',
+            "SKY_SIMPLE": './assets/buttons/9.png',
+            "BLUE_RUBY": './assets/buttons/10.png',
+            "GREEN_SIMPLE": './assets/buttons/11.png',
+            "ROUNDED_MARK": './assets/buttons/12.png',
+            "ROUNDED_ORANGE": './assets/buttons/13.png',
+            "SPACE_PINK": './assets/buttons/14.png',
+            "WAFLE": './assets/buttons/15.png',
+            "RUBY_IN_RED": './assets/buttons/16.png',
+            "OUT_GROUND_MARK": './assets/buttons/17.png',
+            "ICE_BLUE": './assets/buttons/18.png',
+            "ROUNDED_LOW_RAINBOW": './assets/buttons/19.png',
+            "GOLD_GROUND_ROUND": './assets/buttons/20.png',
+        },
+        output: null
     }
 });
 
@@ -363,8 +391,13 @@ const gameInfo = window.gameInfo = {
         fallingItems: [],
         meteors: []
     },
+    gameBackground: (() => {
+        const a = Object.keys(window.gameAssets["BACKGROUNDS"].murl);
+        return a[Math.floor(Math.random() * a.length)]
+    })(),
     slowFallingObjects: false, // false || %
     nextBlock: Infinity, // time to next falling block
+    nextPlayFood: Infinity,
     pushSession: function(state) { // @state: Object!
         localStorage.setItem("gameStats", JSON.stringify(state));
     },
@@ -468,6 +501,31 @@ function handleNextBlock() {
     }
 }
 
+function handlePlayFood() {
+    if(window.gameInfo.activeObjects.player.isDead) return;
+
+    const a = window.gameInfo;
+
+    if(a.nextPlayFood === Infinity || --a.nextPlayFood <= 0) {
+        const quota = [ // frames per food // lvls
+            window.secondsToFrames(5),
+            window.secondsToFrames(4),
+            window.secondsToFrames(3),
+            window.secondsToFrames(2),
+            window.secondsToFrames(1),
+            window.secondsToFrames(.85)
+        ][a.gameLevel];
+
+        // Reset timer
+        a.nextPlayFood = quota;
+
+        // Add food
+        const b = a.gameSession;
+        b.points++;
+        a.pushSession(b);
+    }
+}
+
 function preload() {
     // Check if map has a valid structure
     if (map.length > 1 && map.slice(1).filter(io => io.length === map[0].length).length !== map.length - 1) {
@@ -518,8 +576,8 @@ function draw() {
     backTasker();
 
     {
-        const i = gameAssets["BACKGROUNDS"].output["GREEN_TREES"],
-            p = innerHeight * (i.width / i.height);
+        const i = gameAssets["BACKGROUNDS"].output[window.gameInfo.gameBackground],
+              p = innerHeight * (i.width / i.height);
 
         image(
             i,
@@ -803,4 +861,5 @@ function keyReleased() {
 
 function backTasker() {
     handleNextBlock();
+    handlePlayFood();
 }

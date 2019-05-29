@@ -367,7 +367,7 @@ class Player {
                         this.damage(io.damage);
                         io.setPotential(false);
                     } else if(io.type === "POINTS") { // more points
-                        this.eat();
+                        this.eat(10);
                         io.setPotential(false);
                     }
                 }
@@ -416,9 +416,9 @@ class Player {
         return this;
     }
 
-    eat() {
+    eat(p) {
         const a = window.gameInfo.gameSession;
-        a.points++;
+        a.points += p;
 
         window.gameInfo.pushSession(a);
     }
