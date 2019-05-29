@@ -21,7 +21,7 @@ const spreadID = a => {
 /*
     LOADABLE_MODEL: '1'
     LOADABLE_NOKEYS_MODELS_PACK: ['1', '2', '3']
-    LOADABLE_KEYS_MODEL_PACK: {'arsdasd': '1', 'ssdkjsnad': '2'}
+    LOADABLE_KEYS_MODEL_PACK & LOADABLE_KEYS_FONTS_PACK: {'arsdasd': '1', 'ssdkjsnad': '2'}
     LOADABLE_KEYS_MODELS_PACK: {'arsdasd': ['1', '2', '3'], 'ssdkjsnad': ['4', '5', '6']}
 */
 const gameAssets = window.gameAssets = spreadID({
@@ -358,6 +358,13 @@ const gameAssets = window.gameAssets = spreadID({
             "GOLD_GROUND_ROUND": './assets/buttons/20.png',
         },
         output: null
+    },
+    "FONTS": {
+        type: "LOADABLE_KEYS_FONTS_PACK",
+        murl: {
+            "MATCHUP": './assets/fonts/MatchupPro.otf'
+        },
+        output: null
     }
 });
 
@@ -561,6 +568,14 @@ function preload() {
         ma.output = {}
         for (let mk of Object.keys(ma.murl)) {
             ma.output[mk] = loadImage(ma.murl[mk]);
+        }
+    }
+
+    // Load fonts pack with keys
+    for (let ma of gt("LOADABLE_KEYS_FONTS_PACK")) {
+        ma.output = {}
+        for (let mk of Object.keys(ma.murl)) {
+            ma.output[mk] = loadFont(ma.murl[mk]);
         }
     }
 }
