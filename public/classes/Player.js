@@ -478,6 +478,7 @@ class Player {
         this.lastAnimation = true;
         this.lastAnimationDone = false;
         this.updateModel();
+        window.playSound(window.gameAssets["SOUNDS"].output["HERO_DEATH"]);
     }
 
     updateModel() {

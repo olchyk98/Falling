@@ -21,7 +21,7 @@ const spreadID = a => {
 /*
     LOADABLE_MODEL: '1'
     LOADABLE_NOKEYS_MODELS_PACK: ['1', '2', '3']
-    LOADABLE_KEYS_MODEL_PACK & LOADABLE_KEYS_FONTS_PACK: {'arsdasd': '1', 'ssdkjsnad': '2'}
+    LOADABLE_KEYS_MODEL_PACK & LOADABLE_KEYS_FONTS_PACK & LOADABLE_KEYS_SOUNDS_PACK: {'arsdasd': '1', 'ssdkjsnad': '2'}
     LOADABLE_KEYS_MODELS_PACK: {'arsdasd': ['1', '2', '3'], 'ssdkjsnad': ['4', '5', '6']}
 */
 const gameAssets = window.gameAssets = spreadID({
@@ -336,26 +336,26 @@ const gameAssets = window.gameAssets = spreadID({
     "BUTTONS": {
         type: "LOADABLE_KEYS_MODEL_PACK",
         murl: {
-            "BLUE_BORDERED": './assets/buttons/1.png', 
-            "ROUNDED_SAPHIRE": './assets/buttons/2.png', 
-            "GRAY_BOX": './assets/buttons/3.png', 
-            "BUBLES_ORANGE": './assets/buttons/4.png', 
-            "WOOD": './assets/buttons/5.png', 
-            "STONE": './assets/buttons/6.png', 
-            "SPACE_BLUE": './assets/buttons/7.png',
-            "GREEN_SLIME": './assets/buttons/8.png',
-            "SKY_SIMPLE": './assets/buttons/9.png',
-            "BLUE_RUBY": './assets/buttons/10.png',
-            "GREEN_SIMPLE": './assets/buttons/11.png',
-            "ROUNDED_MARK": './assets/buttons/12.png',
-            "ROUNDED_ORANGE": './assets/buttons/13.png',
-            "SPACE_PINK": './assets/buttons/14.png',
-            "WAFLE": './assets/buttons/15.png',
-            "RUBY_IN_RED": './assets/buttons/16.png',
-            "OUT_GROUND_MARK": './assets/buttons/17.png',
-            "ICE_BLUE": './assets/buttons/18.png',
-            "ROUNDED_LOW_RAINBOW": './assets/buttons/19.png',
-            "GOLD_GROUND_ROUND": './assets/buttons/20.png',
+            "BLUE_BORDERED": './assets/hud/buttons/1.png', 
+            "ROUNDED_SAPHIRE": './assets/hud/buttons/2.png', 
+            "GRAY_BOX": './assets/hud/buttons/3.png', 
+            "BUBLES_ORANGE": './assets/hud/buttons/4.png', 
+            "WOOD": './assets/hud/buttons/5.png', 
+            "STONE": './assets/hud/buttons/6.png', 
+            "SPACE_BLUE": './assets/hud/buttons/7.png',
+            "GREEN_SLIME": './assets/hud/buttons/8.png',
+            "SKY_SIMPLE": './assets/hud/buttons/9.png',
+            "BLUE_RUBY": './assets/hud/buttons/10.png',
+            "GREEN_SIMPLE": './assets/hud/buttons/11.png',
+            "ROUNDED_MARK": './assets/hud/buttons/12.png',
+            "ROUNDED_ORANGE": './assets/hud/buttons/13.png',
+            "SPACE_PINK": './assets/hud/buttons/14.png',
+            "WAFLE": './assets/hud/buttons/15.png',
+            "RUBY_IN_RED": './assets/hud/buttons/16.png',
+            "OUT_GROUND_MARK": './assets/hud/buttons/17.png',
+            "ICE_BLUE": './assets/hud/buttons/18.png',
+            "ROUNDED_LOW_RAINBOW": './assets/hud/buttons/19.png',
+            "GOLD_GROUND_ROUND": './assets/hud/buttons/20.png',
         },
         output: null
     },
@@ -363,6 +363,30 @@ const gameAssets = window.gameAssets = spreadID({
         type: "LOADABLE_KEYS_FONTS_PACK",
         murl: {
             "MATCHUP": './assets/fonts/MatchupPro.otf'
+        },
+        output: null
+    },
+    "SOUNDS": {
+        type: "LOADABLE_KEYS_SOUNDS_PACK",
+        murl: {
+            "HERO_ATTACK_SKILL": './assets/sounds/attack_skill.wav',
+            "HERO_EARNS_FALLING_POINT": './assets/sounds/earn_fallling_point.wav',
+            "LEVEL_EASY_CHOOSE": './assets/sounds/easy_level.wav',
+            "HERO_TIME_FREEZE_SKILL": './assets/sounds/freeze_time_skill.wav',
+            "LEVEL_HELL_CHOOSE": './assets/sounds/hell_level.wav',
+            "HERO_DAMAGE": './assets/sounds/hero_damage.wav',
+            "HERO_DEATH": './assets/sounds/hero_death.wav',
+            "LEVEL_HIGH_CHOOSE": './assets/sounds/high_level.wav',
+            "LEVEL_IMPOSSIBLE_CHOOSE": './assets/sounds/impossible_level.wav',
+            "MENU_CLICK_SOUND": './assets/sounds/menu_click_sound.wav',
+            "HERO_NO_LIMITS_SKILL": './assets/sounds/no_limits_skill.wav',
+            "LEVEL_PASSIVE_CHOOSE": './assets/sounds/passive_level.wav',
+            "HERO_RAGE_SKILL": './assets/sounds/rage_skill.wav',
+            "HERO_REGENERATE_SKILL": './assets/sounds/regenerate_skill.wav',
+            "HERO_SLIDE_SKILL": './assets/sounds/slide_skill.wav',
+            "HERO_SHIELD_SKILL": './assets/sounds/shield_skill.wav',
+            "LEVEL_STANDARD_CHOOSE": './assets/sounds/standard_level.wav',
+            "HERO_SUMMON_METEOR_SKILL": './assets/sounds/summon_meteor_skill.wav'
         },
         output: null
     }
@@ -385,6 +409,7 @@ const map = [ // goes from down to up of the screen
 let liveMap = window.liveMap = [];
 
 const gameInfo = window.gameInfo = {
+    appStage: "MAIN_MENU", // MAIN_MENU, LEVELS, PROGRESSION, CONVERTOR, GAME_ACTION
     active: true,
     canvas: {
         height: innerHeight + 1,
@@ -430,7 +455,9 @@ window.nextblockID = window.nextMeteorID = 0;
 
 const secondsToFrames = window.secondsToFrames = (s = 1) => 60 / gameInfo.canvas.frameRate * 60 * s;
 
-//// TODO: LEVELING: seconds per food, block spawn speed
+window.playSound = s => {
+    s.play();
+}
 
 function handleNextBlock() {
     if(!window.gameInfo.active) return;
@@ -444,25 +471,25 @@ function handleNextBlock() {
                 Infinity
             ],
             [
-                secondsToFrames(.65),
-                secondsToFrames()
-            ],
-            [
-                secondsToFrames(.25),
-                secondsToFrames()
-            ],
-            [
-                secondsToFrames(.15),
-                secondsToFrames()
-            ],
-            [
-                secondsToFrames(.15),
-                secondsToFrames(.75)
-            ],
-            [
-                secondsToFrames(.1),
+                secondsToFrames(.2),
                 secondsToFrames(.5)
-            ]
+            ],
+            [
+                secondsToFrames(.085),
+                secondsToFrames(.15)
+            ],
+            [
+                secondsToFrames(.05),
+                secondsToFrames(.1)
+            ],
+            [
+                secondsToFrames(.05),
+                secondsToFrames(.1)
+            ],
+            [
+                secondsToFrames(0),
+                secondsToFrames(.05)
+            ],
         ][window.gameInfo.gameLevel];
 
         gameInfo.nextBlock = random(nbs[0], nbs[1]);
@@ -471,9 +498,9 @@ function handleNextBlock() {
             const o = o => o[floor(random(o.length))];
 
             if(random(false, true) <= .95) { // obstacle
-                const size = random(150, 200),
+                const size = 75,
                       mod = o(Object.values(gameAssets["FALLING_ITEMS"].output)),
-                      speed = [[0, 0], [1, 7], [10, 15], [15, 20], [25, 30], [30, 40]][window.gameInfo.gameLevel];
+                      speed = [[0, 0], [1, 7], [5, 10], [15, 20], [25, 30], [30, 40]][window.gameInfo.gameLevel];
 
                 gameInfo.activeObjects.fallingItems.push(
                     new FallingItem(
@@ -576,6 +603,14 @@ function preload() {
         ma.output = {}
         for (let mk of Object.keys(ma.murl)) {
             ma.output[mk] = loadFont(ma.murl[mk]);
+        }
+    }
+
+    // Load sounds pack with keys
+    for (let ma of gt("LOADABLE_KEYS_SOUNDS_PACK")) {
+        ma.output = {}
+        for (let mk of Object.keys(ma.murl)) {
+            ma.output[mk] = loadSound(ma.murl[mk]);
         }
     }
 }
