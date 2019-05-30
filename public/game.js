@@ -409,8 +409,8 @@ const map = [ // goes from down to up of the screen
 let liveMap = window.liveMap = [];
 
 const gameInfo = window.gameInfo = {
-    appStage: "MAIN_MENU", // MAIN_MENU, LEVELS, PROGRESSION, CONVERTOR, GAME_ACTION
-    active: true,
+    appStage: "MAIN_MENU", // MAIN_MENU, MENU_LEVELS, PROGRESSION, MENU_CONVERTOR, GAME_ACTION
+    active: false,
     canvas: {
         height: innerHeight + 1,
         width: innerWidth,
@@ -619,297 +619,321 @@ function setup() {
     createCanvas(gameInfo.canvas.width, gameInfo.canvas.height);
     frameRate(gameInfo.canvas.frameRate);
 
-    gameInfo.activeObjects.player = new Player(400, 20);
+    // gameInfo.activeObjects.player = new Player(400, 20);
 }
 
 function draw() {
-    backTasker();
+    switch(window.gameInfo.appStage) {
+        case 'MAIN_MENU':
+            background('black');
+        break;
+        case 'MENU_LEVELS':
+            background('red');
+        break;
+        case 'MENU_PROGRESSION':
+            background('blue');
+        break;
+        case 'MENU_CONVERTOR':
+            background('purple');
+        break;
+        case 'GAME_ACTION': {
+            if(!window.gameInfo.active) break;
 
-    {
-        const i = gameAssets["BACKGROUNDS"].output[window.gameInfo.gameBackground],
-              p = innerHeight * (i.width / i.height);
+            handleNextBlock();
+            handlePlayFood();
 
-        image(
-            i,
-            0,
-            innerHeight - p,
-            innerWidth,
-            p
-        );
-    }
+            {
+                const i = gameAssets["BACKGROUNDS"].output[window.gameInfo.gameBackground],
+                      p = innerHeight * (i.width / i.height);
 
-    // Draw blocks // TODO: Use classes
-    map.slice().reverse().forEach((ma, iy) => {
-        ma.forEach((mk, ix) => {
-            if (mk === 0) return;
-            const s = gameInfo.blockSize,
-                b = liveMap[iy] && liveMap[iy][ix];
+                image(
+                    i,
+                    0,
+                    innerHeight - p,
+                    innerWidth,
+                    p
+                );
+            }
 
-            switch (mk) {
-                case gameAssets["GRASS_BLOCK"].markupID:
-                case gameAssets["DOWNGRASS_BLOCK"].markupID:
-                case gameAssets["SPIKES_ABLOCK"].markupID:
-                    if (b && b instanceof Block) {
-                        b.render();
-                    } else {
-                        const mo = gameAssets[Object.keys(gameAssets).find(io => gameAssets[io].markupID === mk)];
-                        if(!mo) console.error("Invalid object mark!", markupID);
+            // Draw blocks // TODO: Use classes
+            map.slice().reverse().forEach((ma, iy) => {
+                ma.forEach((mk, ix) => {
+                    if (mk === 0) return;
+                    const s = gameInfo.blockSize,
+                        b = liveMap[iy] && liveMap[iy][ix];
 
-                        if (!liveMap[iy]) liveMap[iy] = [];
-                        liveMap[iy][ix] = (new Block(
-                            mo.output,
-                            ix * s,
-                            innerHeight - (iy + 1) * s,
-                            s,
-                            ([
-                                gameAssets["SPIKES_ABLOCK"].markupID
-                            ].includes(mk)) ? "AUTO" : null,
-                            mo.touchAction
-                        )).render();
+                    switch (mk) {
+                        case gameAssets["GRASS_BLOCK"].markupID:
+                        case gameAssets["DOWNGRASS_BLOCK"].markupID:
+                        case gameAssets["SPIKES_ABLOCK"].markupID:
+                            if (b && b instanceof Block) {
+                                b.render();
+                            } else {
+                                const mo = gameAssets[Object.keys(gameAssets).find(io => gameAssets[io].markupID === mk)];
+                                if(!mo) console.error("Invalid object mark!", markupID);
+
+                                if (!liveMap[iy]) liveMap[iy] = [];
+                                liveMap[iy][ix] = (new Block(
+                                    mo.output,
+                                    ix * s,
+                                    innerHeight - (iy + 1) * s,
+                                    s,
+                                    ([
+                                        gameAssets["SPIKES_ABLOCK"].markupID
+                                    ].includes(mk)) ? "AUTO" : null,
+                                    mo.touchAction
+                                )).render();
+                            }
+                            break;
+                        default:
+                            break;
                     }
-                    break;
-                default:
-                    break;
-            }
-        });
-    });
+                });
+            });
 
-    // Draw status bar
-    {
-        let cw = 400, // Container width
-            hh = 15, // info bar height 
-            ibm = 5, // info bars margin
-            mt = 20, // margin top
-            fis = 25, // points icon size
-            gbe = 12.5, // gap between elements
-            cfg = 17.5, // custom points c-items gap
-            sis = 42.5, // skill icon size
-            sims = sis * .75, // skill icon mat size
-            smr = 25; // skills margin
-
-        // Food
-        image(
-            gameAssets["FOOD"].output["BANANAS"],
-            innerWidth / 2 - fis / 2 - cfg,
-            mt,
-            fis,
-            fis
-        );
-        textSize(20);
-        fill('white');
-        text(
-            window.gameInfo.gameSession.points,
-            innerWidth / 2 - fis / 2 + cfg,
-            mt + fis / 2 + 5
-        );
-
-        // Health & Mana
-        const playerStats = window.gameInfo.activeObjects.player.getStats();
-
-        const infoBars = [
+            // Draw status bar
             {
-                ccName: "HEALTH",
-                name: "hp",
-                infoContainer: playerStats.health,
-                colorBar: "rgba(255, 0, 0, .85)",
-                colorText: "white"
-            },
-            {
-                ccName: "MANA",
-                name: "mana",
-                infoContainer: playerStats.mana,
-                colorBar: "rgba(0, 0, 255, .85)",
-                colorText: "white"
-            }
-        ];
+                let cw = 400, // Container width
+                    hh = 15, // info bar height 
+                    ibm = 5, // info bars margin
+                    mt = 20, // margin top
+                    fis = 25, // points icon size
+                    gbe = 12.5, // gap between elements
+                    cfg = 17.5, // custom points c-items gap
+                    sis = 42.5, // skill icon size
+                    sims = sis * .75, // skill icon mat size
+                    smr = 25; // skills margin
 
-        infoBars.forEach(({ ccName, name, infoContainer, colorBar, colorText }, index) => {
-            const _y = mt + fis + gbe + (hh + ibm) * index;
-
-            push();
-                noStroke();
-                fill('rgba(0, 0, 0, .2)');
-                rect(
-                    innerWidth / 2 - cw / 2,
-                    _y,
-                    cw,
-                    hh
-                );
-                fill(colorBar);
-                {
-                    const _mh = 1 - infoContainer.current / infoContainer.max;
-                    rect(
-                        innerWidth / 2 - cw / 2,
-                        _y,
-                        cw - cw * ((_mh > 0) ? _mh : 0),
-                        hh
-                    );
-                }
-                textSize(12.5);
-                fill(colorText);
-                textAlign(CENTER);
-
-                let _text = `${ floor(infoContainer.current) }${ name } (${ floor(infoContainer.current / infoContainer.max * 100) }%)`;
-
-                if(infoContainer.real === Infinity) _text = `∞ ${ name }`;
-
-                text(
-                    _text,
-                    innerWidth / 2,
-                    _y + hh / 2 + 4.5
-                );
-            pop();
-        });
-
-        // Skills
-        const skills = window.gameInfo.activeObjects.player.skills.filter(io => io.level);
-
-        const skillsW = a => ( Number.isInteger(a) ? a : skills.length - 1 ) * (sis + smr);
-        
-        skills.map(({ level, fireKeyCode, name, icons, restorePack, durationPack, usePrice, borderType, displayName }, index) => {
-            const x = innerWidth / 2 - cw / 2 + skillsW(index) + cw / 2 - skillsW() / 2 - sis / 2,
-                  y = mt + fis + (hh + ibm * infoBars.length) + mt / 4 + gbe * 2;
-
-            push();
-                // cover
-                fill('#2C0C0C');
-                // strokeWeight(4);
-                // stroke('white');
-                rect(
-                    x,
-                    y,
-                    sis,
-                    sis
-                );
-                // border
+                // Food
                 image(
-                    window.gameAssets["SKILL_FRAMES"].output[borderType],
-                    x,
-                    y,
-                    sis,
-                    sis
+                    gameAssets["FOOD"].output["BANANAS"],
+                    innerWidth / 2 - fis / 2 - cfg,
+                    mt,
+                    fis,
+                    fis
                 );
-                // icon
-                image(
-                    icons[level - 1] || icons[0],
-                    x + sis / 7,
-                    y + sis / 7,
-                    sims,
-                    sims
-                );
-                // fire button
-                strokeWeight(4);
-                stroke('white');
-                textSize(17.5);
-                textAlign(CENTER);
-                fill('black');
-                text(
-                    String.fromCharCode(fireKeyCode),
-                    x + sis / 2 + .5,
-                    y + sis / 2 + 6
-                );
-                // restored
-                const skilld = window.gameInfo.activeObjects.player.getUsedSkills[name];
-                const restoreFrames = secondsToFrames((Array.isArray(restorePack)) ? restorePack[level] || restorePack[0] : restorePack);
-                const restored = (skilld) ? (skilld.startFrame + restoreFrames - frameCount ) / restoreFrames : 0;
-                const rpx = sis * ( restored < 0 ? 0 : restored ) // restored upx
-                noStroke();
-                fill('rgba(255, 255, 255, .65)');
-                rect(
-                    x,
-                    y + (sis - rpx),
-                    sis,
-                    rpx
-                );
-                // info
-                textSize(12.5);
-                textAlign(CENTER);
+                textSize(20);
                 fill('white');
                 text(
-                    displayName,
-                    x + sis / 2,
-                    y + sis + 12.5 + 5
+                    window.gameInfo.gameSession.points,
+                    innerWidth / 2 - fis / 2 + cfg,
+                    mt + fis / 2 + 5
                 );
-                if(playerStats.mana.real !== Infinity) {
-                    fill( (playerStats.mana.real - usePrice >= 0) ? 'white' : 'rgba(255, 255, 255, .25)' )
-                    text(
-                        `${ usePrice } 🧵`,
-                        x + sis / 2,
-                        y + sis + 12.5 + 25
-                    );
-                }
 
-                // listen for action
-                if(
-                    (!restored || restored <= 0) &&
-                    (
-                        ( // keyboard
-                            keyIsPressed &&
-                            keyCode === fireKeyCode
-                        ) ||
-                        ( // mouse
-                            mouseIsPressed &&
-                            (mouseX > x && mouseX < x + sis) &&
-                            (mouseY > y && mouseY < y + sis)
-                        )
-                    )
-                ) window.gameInfo.activeObjects.player.useSkill(
-                    name,
-                    secondsToFrames(
-                        (Array.isArray(durationPack)) ? durationPack[level - 1] || durationPack[0] : durationPack
-                    ),
-                    usePrice
-                );
-            pop();
-        });
+                // Health & Mana
+                const playerStats = window.gameInfo.activeObjects.player.getStats();
+
+                const infoBars = [
+                    {
+                        ccName: "HEALTH",
+                        name: "hp",
+                        infoContainer: playerStats.health,
+                        colorBar: "rgba(255, 0, 0, .85)",
+                        colorText: "white"
+                    },
+                    {
+                        ccName: "MANA",
+                        name: "mana",
+                        infoContainer: playerStats.mana,
+                        colorBar: "rgba(0, 0, 255, .85)",
+                        colorText: "white"
+                    }
+                ];
+
+                infoBars.forEach(({ ccName, name, infoContainer, colorBar, colorText }, index) => {
+                    const _y = mt + fis + gbe + (hh + ibm) * index;
+
+                    push();
+                        noStroke();
+                        fill('rgba(0, 0, 0, .2)');
+                        rect(
+                            innerWidth / 2 - cw / 2,
+                            _y,
+                            cw,
+                            hh
+                        );
+                        fill(colorBar);
+                        {
+                            const _mh = 1 - infoContainer.current / infoContainer.max;
+                            rect(
+                                innerWidth / 2 - cw / 2,
+                                _y,
+                                cw - cw * ((_mh > 0) ? _mh : 0),
+                                hh
+                            );
+                        }
+                        textSize(12.5);
+                        fill(colorText);
+                        textAlign(CENTER);
+
+                        let _text = `${ floor(infoContainer.current) }${ name } (${ floor(infoContainer.current / infoContainer.max * 100) }%)`;
+
+                        if(infoContainer.real === Infinity) _text = `∞ ${ name }`;
+
+                        text(
+                            _text,
+                            innerWidth / 2,
+                            _y + hh / 2 + 4.5
+                        );
+                    pop();
+                });
+
+                // Skills
+                const skills = window.gameInfo.activeObjects.player.skills.filter(io => io.level);
+
+                const skillsW = a => ( Number.isInteger(a) ? a : skills.length - 1 ) * (sis + smr);
+                
+                skills.map(({ level, fireKeyCode, name, icons, restorePack, durationPack, usePrice, borderType, displayName }, index) => {
+                    const x = innerWidth / 2 - cw / 2 + skillsW(index) + cw / 2 - skillsW() / 2 - sis / 2,
+                          y = mt + fis + (hh + ibm * infoBars.length) + mt / 4 + gbe * 2;
+
+                    push();
+                        // cover
+                        fill('#2C0C0C');
+                        // strokeWeight(4);
+                        // stroke('white');
+                        rect(
+                            x,
+                            y,
+                            sis,
+                            sis
+                        );
+                        // border
+                        image(
+                            window.gameAssets["SKILL_FRAMES"].output[borderType],
+                            x,
+                            y,
+                            sis,
+                            sis
+                        );
+                        // icon
+                        image(
+                            icons[level - 1] || icons[0],
+                            x + sis / 7,
+                            y + sis / 7,
+                            sims,
+                            sims
+                        );
+                        // fire button
+                        strokeWeight(4);
+                        stroke('white');
+                        textSize(17.5);
+                        textAlign(CENTER);
+                        fill('black');
+                        text(
+                            String.fromCharCode(fireKeyCode),
+                            x + sis / 2 + .5,
+                            y + sis / 2 + 6
+                        );
+                        // restored
+                        const skilld = window.gameInfo.activeObjects.player.getUsedSkills[name];
+                        const restoreFrames = secondsToFrames((Array.isArray(restorePack)) ? restorePack[level] || restorePack[0] : restorePack);
+                        const restored = (skilld) ? (skilld.startFrame + restoreFrames - frameCount ) / restoreFrames : 0;
+                        const rpx = sis * ( restored < 0 ? 0 : restored ) // restored upx
+                        noStroke();
+                        fill('rgba(255, 255, 255, .65)');
+                        rect(
+                            x,
+                            y + (sis - rpx),
+                            sis,
+                            rpx
+                        );
+                        // info
+                        textSize(12.5);
+                        textAlign(CENTER);
+                        fill('white');
+                        text(
+                            displayName,
+                            x + sis / 2,
+                            y + sis + 12.5 + 5
+                        );
+                        if(playerStats.mana.real !== Infinity) {
+                            fill( (playerStats.mana.real - usePrice >= 0) ? 'white' : 'rgba(255, 255, 255, .25)' )
+                            text(
+                                `${ usePrice } 🧵`,
+                                x + sis / 2,
+                                y + sis + 12.5 + 25
+                            );
+                        }
+
+                        // listen for action
+                        if(
+                            (!restored || restored <= 0) &&
+                            (
+                                ( // keyboard
+                                    keyIsPressed &&
+                                    keyCode === fireKeyCode
+                                ) ||
+                                ( // mouse
+                                    mouseIsPressed &&
+                                    (mouseX > x && mouseX < x + sis) &&
+                                    (mouseY > y && mouseY < y + sis)
+                                )
+                            )
+                        ) window.gameInfo.activeObjects.player.useSkill(
+                            name,
+                            secondsToFrames(
+                                (Array.isArray(durationPack)) ? durationPack[level - 1] || durationPack[0] : durationPack
+                            ),
+                            usePrice
+                        );
+                    pop();
+                });
+            }
+
+            // Draw & Update Player
+            gameInfo.activeObjects.player.update().render();
+
+            // Draw falling blocks
+            for(let ma of gameInfo.activeObjects.fallingItems) ma.update().render();
+
+            // Draw meteors
+            for(let ma of gameInfo.activeObjects.meteors) ma.update().render();
+        }
+        break;
+        default:
+            alert("Invalid app stage.");
+            console.error("Invalid app stage.");
+            noLoop();
+        break;
     }
-
-    // Draw & Update Player
-    gameInfo.activeObjects.player.update().render();
-
-    // Draw falling blocks
-    for(let ma of gameInfo.activeObjects.fallingItems) ma.update().render();
-
-    // Draw meteors
-    for(let ma of gameInfo.activeObjects.meteors) ma.update().render();
 }
 
 function keyPressed() {
-    switch (keyCode) {
-        case 32: // space
-            gameInfo.activeObjects.player.jump();
-        break;
-        case 39:
-        case 68: // left
-            gameInfo.activeObjects.player.setDir("LEFT", true);
-        break;
-        case 37:
-        case 65: // right
-            gameInfo.activeObjects.player.setDir("RIGHT", true);
-        break;
-        default:break;
-    }
+    if(window.gameInfo.appStage === "MAIN_GAME" && window.gameInfo.active) {
+        switch (keyCode) {
+            case 32: // space
+                gameInfo.activeObjects.player.jump();
+            break;
+            case 39:
+            case 68: // left
+                gameInfo.activeObjects.player.setDir("LEFT", true);
+            break;
+            case 37:
+            case 65: // right
+                gameInfo.activeObjects.player.setDir("RIGHT", true);
+            break;
+            default:break;
+        }
 
-    pressedKeys[keyCode] = true;
+        pressedKeys[keyCode] = true;
+    }
 }
 
 function keyReleased() {
-    pressedKeys[keyCode] = false;
+    if(window.gameInfo.appStage === "MAIN_GAME" && window.gameInfo.active) {
+        pressedKeys[keyCode] = false;
 
-    switch (keyCode) {
-        case 39:
-        case 68: // left
-            gameInfo.activeObjects.player.setDir("LEFT", null);
-        break;
-        case 37:
-        case 65: // right
-            gameInfo.activeObjects.player.setDir("RIGHT", null);
-        break;
-        default:break;
+        switch (keyCode) {
+            case 39:
+            case 68: // left
+                gameInfo.activeObjects.player.setDir("LEFT", null);
+            break;
+            case 37:
+            case 65: // right
+                gameInfo.activeObjects.player.setDir("RIGHT", null);
+            break;
+            default:break;
+        }
     }
-}
-
-function backTasker() {
-    handleNextBlock();
-    handlePlayFood();
 }
