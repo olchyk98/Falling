@@ -21,8 +21,9 @@ const spreadID = a => {
 /*
     LOADABLE_MODEL: '1'
     LOADABLE_NOKEYS_MODELS_PACK: ['1', '2', '3']
-    LOADABLE_KEYS_MODEL_PACK & LOADABLE_KEYS_FONTS_PACK & LOADABLE_KEYS_SOUNDS_PACK: {'arsdasd': '1', 'ssdkjsnad': '2'}
+    LOADABLE_KEYS_MODEL_PACK & LOADABLE_KEYS_FONT_PACK & LOADABLE_KEYS_SOUND_PACK: {'arsdasd': '1', 'ssdkjsnad': '2'}
     LOADABLE_KEYS_MODELS_PACK: {'arsdasd': ['1', '2', '3'], 'ssdkjsnad': ['4', '5', '6']}
+    LOADABLE_XKEYS_MODELS_PACK: {'arsdasd': {'afds': '1', 'adgdsf': '3rd', 'asdsa': '5rsd'}}
 */
 const gameAssets = window.gameAssets = spreadID({
     "GRASS_BLOCK": {
@@ -333,41 +334,47 @@ const gameAssets = window.gameAssets = spreadID({
         },
         output: null
     },
-    "BUTTONS": {
-        type: "LOADABLE_KEYS_MODEL_PACK",
+    "HUD_ITEMS": {
+        type: "LOADABLE_XKEYS_MODELS_PACK",
         murl: {
-            "BLUE_BORDERED": './assets/hud/buttons/1.png', 
-            "ROUNDED_SAPHIRE": './assets/hud/buttons/2.png', 
-            "GRAY_BOX": './assets/hud/buttons/3.png', 
-            "BUBLES_ORANGE": './assets/hud/buttons/4.png', 
-            "WOOD": './assets/hud/buttons/5.png', 
-            "STONE": './assets/hud/buttons/6.png', 
-            "SPACE_BLUE": './assets/hud/buttons/7.png',
-            "GREEN_SLIME": './assets/hud/buttons/8.png',
-            "SKY_SIMPLE": './assets/hud/buttons/9.png',
-            "BLUE_RUBY": './assets/hud/buttons/10.png',
-            "GREEN_SIMPLE": './assets/hud/buttons/11.png',
-            "ROUNDED_MARK": './assets/hud/buttons/12.png',
-            "ROUNDED_ORANGE": './assets/hud/buttons/13.png',
-            "SPACE_PINK": './assets/hud/buttons/14.png',
-            "WAFLE": './assets/hud/buttons/15.png',
-            "RUBY_IN_RED": './assets/hud/buttons/16.png',
-            "OUT_GROUND_MARK": './assets/hud/buttons/17.png',
-            "ICE_BLUE": './assets/hud/buttons/18.png',
-            "ROUNDED_LOW_RAINBOW": './assets/hud/buttons/19.png',
-            "GOLD_GROUND_ROUND": './assets/hud/buttons/20.png',
+            "BUTTONS": {
+                "BLUE_BORDERED": './assets/hud/buttons/1.png', 
+                "ROUNDED_SAPHIRE": './assets/hud/buttons/2.png', 
+                "GRAY_BOX": './assets/hud/buttons/3.png', 
+                "BUBLES_ORANGE": './assets/hud/buttons/4.png', 
+                "WOOD": './assets/hud/buttons/5.png', 
+                "STONE": './assets/hud/buttons/6.png', 
+                "SPACE_BLUE": './assets/hud/buttons/7.png',
+                "GREEN_SLIME": './assets/hud/buttons/8.png',
+                "SKY_SIMPLE": './assets/hud/buttons/9.png',
+                "BLUE_RUBY": './assets/hud/buttons/10.png',
+                "GREEN_SIMPLE": './assets/hud/buttons/11.png',
+                "ROUNDED_MARK": './assets/hud/buttons/12.png',
+                "ROUNDED_ORANGE": './assets/hud/buttons/13.png',
+                "SPACE_PINK": './assets/hud/buttons/14.png',
+                "WAFLE": './assets/hud/buttons/15.png',
+                "RUBY_IN_RED": './assets/hud/buttons/16.png',
+                "OUT_GROUND_MARK": './assets/hud/buttons/17.png',
+                "ICE_BLUE": './assets/hud/buttons/18.png',
+                "ROUNDED_LOW_RAINBOW": './assets/hud/buttons/19.png',
+                "GOLD_GROUND_ROUND": './assets/hud/buttons/20.png',
+            },
+            "POINTS": {
+                "POINT": './assets/hud/points/point.png',
+                "FLASH_POINT": './assets/hud/points/flash.png'
+            }
         },
         output: null
     },
     "FONTS": {
-        type: "LOADABLE_KEYS_FONTS_PACK",
+        type: "LOADABLE_KEYS_FONT_PACK",
         murl: {
             "MATCHUP": './assets/fonts/MatchupPro.otf'
         },
         output: null
     },
     "SOUNDS": {
-        type: "LOADABLE_KEYS_SOUNDS_PACK",
+        type: "LOADABLE_KEYS_SOUND_PACK",
         murl: {
             "HERO_ATTACK_SKILL": './assets/sounds/attack_skill.wav',
             "HERO_EARNS_FALLING_POINT": './assets/sounds/earn_fallling_point.wav',
@@ -590,6 +597,17 @@ function preload() {
         }
     }
 
+    // Load images pack with 2d ar keys @[mult]
+    for (let ma of gt("LOADABLE_XKEYS_MODELS_PACK")) {
+        ma.output = {}
+        for (let mk of Object.keys(ma.murl)) {
+            ma.output[mk] = {};
+            for (let ml of Object.keys(ma.murl[mk])) {
+                ma.output[mk][ml] = loadImage(ma.murl[mk][ml]);
+            }
+        }
+    }
+
     // Load images pack with keys @[single]
     for (let ma of gt("LOADABLE_KEYS_MODEL_PACK")) {
         ma.output = {}
@@ -599,7 +617,7 @@ function preload() {
     }
 
     // Load fonts pack with keys
-    for (let ma of gt("LOADABLE_KEYS_FONTS_PACK")) {
+    for (let ma of gt("LOADABLE_KEYS_FONT_PACK")) {
         ma.output = {}
         for (let mk of Object.keys(ma.murl)) {
             ma.output[mk] = loadFont(ma.murl[mk]);
@@ -607,7 +625,7 @@ function preload() {
     }
 
     // Load sounds pack with keys
-    for (let ma of gt("LOADABLE_KEYS_SOUNDS_PACK")) {
+    for (let ma of gt("LOADABLE_KEYS_SOUND_PACK")) {
         ma.output = {}
         for (let mk of Object.keys(ma.murl)) {
             ma.output[mk] = loadSound(ma.murl[mk]);
