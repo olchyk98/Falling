@@ -430,7 +430,7 @@ const gameInfo = window.gameInfo = {
         meteors: []
     },
     gameBackground: (() => {
-        const a = Object.keys(window.gameAssets["BACKGROUNDS"].murl);
+        const a = Object.keys(gameAssets["BACKGROUNDS"].murl);
         return a[Math.floor(Math.random() * a.length)]
     })(),
     slowFallingObjects: false, // false || %
@@ -481,11 +481,11 @@ function fitTImage(i, w = null, h = null) {
 }
 
 function handleNextBlock() {
-    if(!window.gameInfo.active) return;
+    if(!gameInfo.active) return;
 
     const a = gameInfo.nextBlock;
 
-    if((a === Infinity || a <= 0) && !window.gameInfo.slowFallingObjects) {
+    if((a === Infinity || a <= 0) && !gameInfo.slowFallingObjects) {
         let nbs = [
             [
                 secondsToFrames(.2),
@@ -507,7 +507,7 @@ function handleNextBlock() {
                 secondsToFrames(0),
                 secondsToFrames(.05)
             ],
-        ][window.gameInfo.gameLevel];
+        ][gameInfo.gameLevel];
 
         gameInfo.nextBlock = random(nbs[0], nbs[1]);
 
@@ -517,7 +517,7 @@ function handleNextBlock() {
             if(random(false, true) <= .95) { // obstacle
                 const size = 75,
                       mod = o(Object.values(gameAssets["FALLING_ITEMS"].output)),
-                      speed = [[1, 2], [1, 7], [7, 20], [25, 30], [30, 40]][window.gameInfo.gameLevel];
+                      speed = [[1, 2], [1, 7], [7, 20], [25, 30], [30, 40]][gameInfo.gameLevel];
 
                 gameInfo.activeObjects.fallingItems.push(
                     new FallingItem(
@@ -553,9 +553,9 @@ function handleNextBlock() {
 }
 
 function handlePlayFood() {
-    if(window.gameInfo.activeObjects.player.isDead) return;
+    if(gameInfo.activeObjects.player.isDead) return;
 
-    const a = window.gameInfo;
+    const a = gameInfo;
 
     if(a.nextPlayFood === Infinity || --a.nextPlayFood <= 0) {
         const quota = [ // frames per food // lvls
@@ -577,9 +577,9 @@ function handlePlayFood() {
 }
 
 function inititalizeGame(lvl) {
-    window.gameInfo.gameLevel = lvl;
-    window.gameInfo.active = true;
-    window.gameInfo.appStage = "GAME_ACTION";
+    gameInfo.gameLevel = lvl;
+    gameInfo.active = true;
+    gameInfo.appStage = "GAME_ACTION";
 
     gameInfo.activeObjects.player = new Player(400, 20);
 
@@ -658,7 +658,7 @@ function setup() {
 }
 
 function draw() {
-    switch(window.gameInfo.appStage) {
+    switch(gameInfo.appStage) {
         case 'MAIN_MENU':
         case 'MENU_LEVELS': {
             push();
@@ -673,7 +673,7 @@ function draw() {
 
                     let buttons = [];
 
-                    if(window.gameInfo.appStage === "MAIN_MENU") {
+                    if(gameInfo.appStage === "MAIN_MENU") {
                         buttons = [
                             {
                                 title: "Play",
@@ -692,7 +692,7 @@ function draw() {
                                 onClick: () => window.open("https://github.com/olchyk98/Falling")
                             }
                         ];
-                    } else if(window.gameInfo.appStage === "MENU_LEVELS") {
+                    } else if(gameInfo.appStage === "MENU_LEVELS") {
 
                         buttons = [
                             {
@@ -756,7 +756,7 @@ function draw() {
                             mouseIsPressed = false;
 
                             if(onClick) onClick();
-                            else if(toStage) window.gameInfo.appStage = toStage;
+                            else if(toStage) gameInfo.appStage = toStage;
                             else console.error(`Stage ${ toStage } is not available yet.`);
                         }
                     });
@@ -769,6 +769,41 @@ function draw() {
                 }
 
                 // Display points
+                {
+                    let im = 7.5, // icon margin
+                        sg = 15, // stat gap (top, right)
+                        is = 30, // icon size
+                        sm = 10; // stat margin
+
+                    [
+                        {
+                            icon: gameAssets["HUD_ITEMS"].output["POINTS"]["POINT"],
+                            value: "100"
+                        },
+                        {
+                            icon: gameAssets["HUD_ITEMS"].output["POINTS"]["FLASH_POINT"],
+                            value: "10"
+                        }
+                    ].forEach(({ icon, value }, ik) => {
+                        const iy = sg + ( (is + sm) * ik );
+
+                        image(
+                            icon,
+                            innerWidth - is - sg,
+                            iy,
+                            is, is
+                        );
+
+                        textAlign(RIGHT, CENTER);
+                        fill('white');
+                        textSize(25);
+                        text(
+                            value,
+                            innerWidth - is - sg - im,
+                            iy + is / 2 + 1
+                        );
+                    });
+                }
             pop();
         }
         break;
@@ -783,7 +818,7 @@ function draw() {
             handlePlayFood();
 
             // Background
-            image(...fitTImage(gameAssets["BACKGROUNDS"].output[window.gameInfo.gameBackground]));
+            image(...fitTImage(gameAssets["BACKGROUNDS"].output[gameInfo.gameBackground]));
 
             // Draw blocks // TODO: Use classes
             map.slice().reverse().forEach((ma, iy) => {
@@ -845,13 +880,13 @@ function draw() {
                 textSize(20);
                 fill('white');
                 text(
-                    window.gameInfo.gameSession.points,
+                    gameInfo.gameSession.points,
                     innerWidth / 2 - fis / 2 + cfg,
                     mt + fis / 2 + 5
                 );
 
                 // Health & Mana
-                const playerStats = window.gameInfo.activeObjects.player.getStats();
+                const playerStats = gameInfo.activeObjects.player.getStats();
 
                 const infoBars = [
                     {
@@ -909,7 +944,7 @@ function draw() {
                 });
 
                 // Skills
-                const skills = window.gameInfo.activeObjects.player.skills.filter(io => io.level);
+                const skills = gameInfo.activeObjects.player.skills.filter(io => io.level);
 
                 const skillsW = a => ( Number.isInteger(a) ? a : skills.length - 1 ) * (sis + smr);
                 
@@ -930,7 +965,7 @@ function draw() {
                         );
                         // border
                         image(
-                            window.gameAssets["SKILL_FRAMES"].output[borderType],
+                            gameAssets["SKILL_FRAMES"].output[borderType],
                             x,
                             y,
                             sis,
@@ -956,7 +991,7 @@ function draw() {
                             y + sis / 2 + 6
                         );
                         // restored
-                        const skilld = window.gameInfo.activeObjects.player.getUsedSkills[name];
+                        const skilld = gameInfo.activeObjects.player.getUsedSkills[name];
                         const restoreFrames = secondsToFrames((Array.isArray(restorePack)) ? restorePack[level] || restorePack[0] : restorePack);
                         const restored = (skilld) ? (skilld.startFrame + restoreFrames - frameCount ) / restoreFrames : 0;
                         const rpx = sis * ( restored < 0 ? 0 : restored ) // restored upx
@@ -1000,7 +1035,7 @@ function draw() {
                                     (mouseY > y && mouseY < y + sis)
                                 )
                             )
-                        ) window.gameInfo.activeObjects.player.useSkill(
+                        ) gameInfo.activeObjects.player.useSkill(
                             name,
                             secondsToFrames(
                                 (Array.isArray(durationPack)) ? durationPack[level - 1] || durationPack[0] : durationPack
@@ -1030,7 +1065,7 @@ function draw() {
 }
 
 function keyPressed() {
-    if(window.gameInfo.appStage === "GAME_ACTION") {
+    if(gameInfo.appStage === "GAME_ACTION") {
         switch (keyCode) {
             case 32: // space
                 gameInfo.activeObjects.player.jump();
@@ -1051,7 +1086,7 @@ function keyPressed() {
 }
 
 function keyReleased() {
-    if(window.gameInfo.appStage === "GAME_ACTION") {
+    if(gameInfo.appStage === "GAME_ACTION") {
         pressedKeys[keyCode] = false;
 
         switch (keyCode) {
