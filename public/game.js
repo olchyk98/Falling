@@ -373,39 +373,38 @@ const gameAssets = window.gameAssets = spreadID({
         },
         output: null
     },
-    "SOUNDS": {
-        type: "LOADABLE_KEYS_SOUND_PACK",
-        murl: {
-            "HERO_ATTACK_SKILL": './assets/sounds/attack_skill.wav',
-            "HERO_EARNS_FALLING_POINT": './assets/sounds/earn_fallling_point.wav',
-            "LEVEL_EASY_CHOOSE": './assets/sounds/easy_level.wav',
-            "HERO_TIME_FREEZE_SKILL": './assets/sounds/freeze_time_skill.wav',
-            "LEVEL_HELL_CHOOSE": './assets/sounds/hell_level.wav',
-            "HERO_DAMAGE": './assets/sounds/hero_damage.wav',
-            "HERO_DEATH": './assets/sounds/hero_death.wav',
-            "LEVEL_HIGH_CHOOSE": './assets/sounds/high_level.wav',
-            "LEVEL_IMPOSSIBLE_CHOOSE": './assets/sounds/impossible_level.wav',
-            "MENU_CLICK_SOUND": './assets/sounds/menu_click_sound.wav',
-            "HERO_NO_LIMITS_SKILL": './assets/sounds/no_limits_skill.wav',
-            "LEVEL_PASSIVE_CHOOSE": './assets/sounds/passive_level.wav',
-            "HERO_RAGE_SKILL": './assets/sounds/rage_skill.wav',
-            "HERO_REGENERATE_SKILL": './assets/sounds/regenerate_skill.wav',
-            "HERO_SLIDE_SKILL": './assets/sounds/slide_skill.wav',
-            "HERO_SHIELD_SKILL": './assets/sounds/shield_skill.wav',
-            "LEVEL_STANDARD_CHOOSE": './assets/sounds/standard_level.wav',
-            "HERO_SUMMON_METEOR_SKILL": './assets/sounds/summon_meteor_skill.wav'
-        },
-        output: null
-    }
+    // "SOUNDS": {
+    //     type: "LOADABLE_KEYS_SOUND_PACK",
+    //     murl: {
+    //         "HERO_ATTACK_SKILL": './assets/sounds/attack_skill.wav',
+    //         "HERO_EARNS_FALLING_POINT": './assets/sounds/earn_fallling_point.wav',
+    //         "LEVEL_EASY_CHOOSE": './assets/sounds/easy_level.wav',
+    //         "HERO_TIME_FREEZE_SKILL": './assets/sounds/freeze_time_skill.wav',
+    //         "LEVEL_HELL_CHOOSE": './assets/sounds/hell_level.wav',
+    //         "HERO_DAMAGE": './assets/sounds/hero_damage.wav',
+    //         "HERO_DEATH": './assets/sounds/hero_death.wav',
+    //         "LEVEL_HIGH_CHOOSE": './assets/sounds/high_level.wav',
+    //         "LEVEL_IMPOSSIBLE_CHOOSE": './assets/sounds/impossible_level.wav',
+    //         "MENU_CLICK_SOUND": './assets/sounds/menu_click_sound.wav',
+    //         "HERO_NO_LIMITS_SKILL": './assets/sounds/no_limits_skill.wav',
+    //         "HERO_RAGE_SKILL": './assets/sounds/rage_skill.wav',
+    //         "HERO_REGENERATE_SKILL": './assets/sounds/regenerate_skill.wav',
+    //         "HERO_SLIDE_SKILL": './assets/sounds/slide_skill.wav',
+    //         "HERO_SHIELD_SKILL": './assets/sounds/shield_skill.wav',
+    //         "LEVEL_STANDARD_CHOOSE": './assets/sounds/standard_level.wav',
+    //         "HERO_SUMMON_METEOR_SKILL": './assets/sounds/summon_meteor_skill.wav'
+    //     },
+    //     output: null
+    // }
 });
 
 const pressedKeys = window.pressedKeys = {}
 
 /*
-	0 - void
+    0 - void
     1 - grass block
     2 - down grass block
-	3 - spikes
+    3 - spikes
 */
 const map = [ // goes from down to up of the screen
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
@@ -416,14 +415,14 @@ const map = [ // goes from down to up of the screen
 let liveMap = window.liveMap = [];
 
 const gameInfo = window.gameInfo = {
-    appStage: "MAIN_MENU", // MAIN_MENU, MENU_LEVELS, PROGRESSION, MENU_CONVERTOR, GAME_ACTION
+    appStage: "MAIN_MENU", // MAIN_MENU, MENU_LEVELS, MENU_EVOLUTION, MENU_CONVERTOR, GAME_ACTION
     active: false,
     canvas: {
         height: innerHeight + 1,
         width: innerWidth,
         frameRate: 60
     },
-    gameLevel: 2, // 0 - PASSIVE, 1 - EASY, 2 - STANDARD, 3 - HARD, 4 - IMPOSIBLE, 5 - HELL
+    gameLevel: 2, // 0 - EASY, 1 - STANDARD, 2 - HARD, 3 - IMPOSSIBLE, 4 - HELL
     blockSize: innerWidth / map[0].length,
     activeObjects: {
         player: null,
@@ -466,6 +465,21 @@ window.playSound = s => {
     s.play();
 }
 
+function fitTImage(i, w = null, h = null) {
+    if(!w) w = innerWidth;
+    if(!h) h = innerHeight;
+
+    const p = h * (i.width / i.height);
+
+    return [
+        i,
+        0,
+        h - p,
+        w,
+        p
+    ];
+}
+
 function handleNextBlock() {
     if(!window.gameInfo.active) return;
 
@@ -473,10 +487,6 @@ function handleNextBlock() {
 
     if((a === Infinity || a <= 0) && !window.gameInfo.slowFallingObjects) {
         let nbs = [
-            [
-                Infinity,
-                Infinity
-            ],
             [
                 secondsToFrames(.2),
                 secondsToFrames(.5)
@@ -507,7 +517,7 @@ function handleNextBlock() {
             if(random(false, true) <= .95) { // obstacle
                 const size = 75,
                       mod = o(Object.values(gameAssets["FALLING_ITEMS"].output)),
-                      speed = [[0, 0], [1, 7], [5, 10], [15, 20], [25, 30], [30, 40]][window.gameInfo.gameLevel];
+                      speed = [[1, 2], [1, 7], [7, 20], [25, 30], [30, 40]][window.gameInfo.gameLevel];
 
                 gameInfo.activeObjects.fallingItems.push(
                     new FallingItem(
@@ -549,7 +559,6 @@ function handlePlayFood() {
 
     if(a.nextPlayFood === Infinity || --a.nextPlayFood <= 0) {
         const quota = [ // frames per food // lvls
-            window.secondsToFrames(5),
             window.secondsToFrames(4),
             window.secondsToFrames(3),
             window.secondsToFrames(2),
@@ -565,6 +574,16 @@ function handlePlayFood() {
         b.points++;
         a.pushSession(b);
     }
+}
+
+function inititalizeGame(lvl) {
+    window.gameInfo.gameLevel = lvl;
+    window.gameInfo.active = true;
+    window.gameInfo.appStage = "GAME_ACTION";
+
+    gameInfo.activeObjects.player = new Player(400, 20);
+
+    return true;
 }
 
 function preload() {
@@ -635,43 +654,136 @@ function preload() {
 
 function setup() {
     createCanvas(gameInfo.canvas.width, gameInfo.canvas.height);
-    frameRate(gameInfo.canvas.frameRate);
-
-    // gameInfo.activeObjects.player = new Player(400, 20);
+    frameRate(gameInfo.canvas.frameRate);    
 }
 
 function draw() {
     switch(window.gameInfo.appStage) {
         case 'MAIN_MENU':
-            background('black');
+        case 'MENU_LEVELS': {
+            push();
+                // Background
+                image(...fitTImage(gameAssets["BACKGROUNDS"].output["NIGHT_FOREST"]));
+
+                // Buttons
+                {
+                    let bh = 80, // menu button height
+                        bw = 220, // menu button width
+                        bm = 20; // menu button margin
+
+                    let buttons = [];
+
+                    if(window.gameInfo.appStage === "MAIN_MENU") {
+                        buttons = [
+                            {
+                                title: "Play",
+                                toStage: "MENU_LEVELS"
+                            },
+                            {
+                                title: "Evolution",
+                                toStage: "MENU_EVOLUTION"
+                            },
+                            {
+                                title: "Convert",
+                                toStage: "MENU_CONVERTOR"
+                            },
+                            {
+                                title: "Github",
+                                onClick: () => window.open("https://github.com/olchyk98/Falling")
+                            }
+                        ];
+                    } else if(window.gameInfo.appStage === "MENU_LEVELS") {
+
+                        buttons = [
+                            {
+                                title: "HELL",
+                                onClick: () => inititalizeGame(4)
+                            },
+                            {
+                                title: "IMPOSSIBLE",
+                                onClick: () => inititalizeGame(3)
+                            },
+                            {
+                                title: "HARD",
+                                onClick: () => inititalizeGame(2)
+                            },
+                            {
+                                title: "STANDARD",
+                                onClick: () => inititalizeGame(1)
+                            },
+                            {
+                                title: "EASY",
+                                onClick: () => inititalizeGame(0)
+                            }
+                        ];
+                    }
+
+                    const buttonsH = buttons.length * (bm + bh); // menu buttons container height
+
+                    let mouseHover = false;
+
+                    buttons.forEach(({ title, toStage, onClick }, ik) => {
+                        const x = innerWidth / 2 - bw / 2,
+                              y = innerHeight / 2 - buttonsH / 2 + ik * (bm + bh);
+
+                        fill('white');
+                        image(
+                            gameAssets["HUD_ITEMS"].output["BUTTONS"]["SPACE_BLUE"],
+                            x,
+                            y,
+                            bw,
+                            bh
+                        );
+                        textAlign(CENTER, CENTER);
+                        textSize(30);
+                        fill('rgba(255, 255, 255, .85)');
+                        text(
+                            title,
+                            x + bw / 2,
+                            y + bh / 2,    
+                        );
+
+                        // ::hover::
+                        const ih = (
+                            (mouseX > x && mouseX < x + bw) &&
+                            (mouseY > y && mouseY < y + bh)
+                        );
+
+                        if(ih && !mouseHover) mouseHover = true;
+
+                        // ::active::
+                        if(mouseIsPressed && ih) {
+                            mouseIsPressed = false;
+
+                            if(onClick) onClick();
+                            else if(toStage) window.gameInfo.appStage = toStage;
+                            else console.error(`Stage ${ toStage } is not available yet.`);
+                        }
+                    });
+
+                    if(mouseHover) {
+                        document.getElementsByTagName("canvas")[0].style.cursor = "pointer";
+                    } else {
+                        document.getElementsByTagName("canvas")[0].style.cursor = "inherit";
+                    }
+                }
+
+                // Display points
+            pop();
+        }
         break;
-        case 'MENU_LEVELS':
-            background('red');
-        break;
-        case 'MENU_PROGRESSION':
+        case 'MENU_EVOLUTION':
             background('blue');
         break;
         case 'MENU_CONVERTOR':
             background('purple');
         break;
         case 'GAME_ACTION': {
-            if(!window.gameInfo.active) break;
-
             handleNextBlock();
             handlePlayFood();
 
-            {
-                const i = gameAssets["BACKGROUNDS"].output[window.gameInfo.gameBackground],
-                      p = innerHeight * (i.width / i.height);
-
-                image(
-                    i,
-                    0,
-                    innerHeight - p,
-                    innerWidth,
-                    p
-                );
-            }
+            // Background
+            image(...fitTImage(gameAssets["BACKGROUNDS"].output[window.gameInfo.gameBackground]));
 
             // Draw blocks // TODO: Use classes
             map.slice().reverse().forEach((ma, iy) => {
@@ -918,7 +1030,7 @@ function draw() {
 }
 
 function keyPressed() {
-    if(window.gameInfo.appStage === "MAIN_GAME" && window.gameInfo.active) {
+    if(window.gameInfo.appStage === "GAME_ACTION") {
         switch (keyCode) {
             case 32: // space
                 gameInfo.activeObjects.player.jump();
@@ -939,7 +1051,7 @@ function keyPressed() {
 }
 
 function keyReleased() {
-    if(window.gameInfo.appStage === "MAIN_GAME" && window.gameInfo.active) {
+    if(window.gameInfo.appStage === "GAME_ACTION") {
         pressedKeys[keyCode] = false;
 
         switch (keyCode) {

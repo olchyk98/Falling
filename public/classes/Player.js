@@ -421,7 +421,7 @@ class Player {
         a.points += p;
 
         window.gameInfo.pushSession(a);
-        window.playSound(window.gameAssets["SOUNDS"].output["HERO_EARNS_FALLING_POINT"]);
+        // window.playSound(window.gameAssets["SOUNDS"].output["HERO_EARNS_FALLING_POINT"]);
     }
 
     useFood(c) {
@@ -463,7 +463,7 @@ class Player {
         this.currentHealth = this.health - ( (!this.shieldActive) ? d : d / 100 * this.shieldMinus );
 
         if(this.previousHealth > this.currentHealth && this.currentHealth > 0) {
-            window.playSound(window.gameAssets["SOUNDS"].output["HERO_DAMAGE"]);
+            // window.playSound(window.gameAssets["SOUNDS"].output["HERO_DAMAGE"]);
         }
 
         if(this.currentHealth <= 0) {
@@ -482,7 +482,7 @@ class Player {
         this.lastAnimation = true;
         this.lastAnimationDone = false;
         this.updateModel();
-        window.playSound(window.gameAssets["SOUNDS"].output["HERO_DEATH"]);
+        // window.playSound(window.gameAssets["SOUNDS"].output["HERO_DEATH"]);
     }
 
     updateModel() {
@@ -563,7 +563,7 @@ class Player {
         switch(sn) {
             case 'ATTACK':
                 inv = () => {
-                    window.playSound(window.gameAssets["SOUNDS"].output["HERO_ATTACK_SKILL"]);
+                    // window.playSound(window.gameAssets["SOUNDS"].output["HERO_ATTACK_SKILL"]);
                     this.updateModelsSkillController("ATTACK_SKILL", true);
                     this.setCustomModel("ATTACK_SKILL");
                     if(!this.velocity) this.velocity -= this.jumpHeight;
@@ -579,7 +579,7 @@ class Player {
             break;
             case 'SLIDE':
                 inv = () => {
-                    window.playSound(window.gameAssets["SOUNDS"].output["HERO_SLIDE_SKILL"]);
+                    // window.playSound(window.gameAssets["SOUNDS"].output["HERO_SLIDE_SKILL"]);
                     const _a = fd();
 
                     this.updateModelsSkillController("SLIDE_SKILL", true);
@@ -596,7 +596,7 @@ class Player {
             break;
             case 'FREEZE_TIME':
                 inv = () => {
-                    window.playSound(window.gameAssets["SOUNDS"].output["HERO_TIME_FREEZE_SKILL"]);
+                    // window.playSound(window.gameAssets["SOUNDS"].output["HERO_TIME_FREEZE_SKILL"]);
                     const _a = fd();
 
                     window.gameInfo.slowFallingObjects = gp(_a.speedReduce, _a.level);
@@ -607,7 +607,7 @@ class Player {
             break;
             case 'REGENERATION':
                 inv = () => {
-                    window.playSound(window.gameAssets["SOUNDS"].output["HERO_REGENERATE_SKILL"]);
+                    // window.playSound(window.gameAssets["SOUNDS"].output["HERO_REGENERATE_SKILL"]);
                     const _a = fd();
 
                     for(let ma = 1; ma <= gp(_a.durationPack, _a.durationPack); ma++) {
@@ -619,7 +619,7 @@ class Player {
             break;
             case 'SUMMON_METEOR':
                 inv = () => {
-                    window.playSound(window.gameAssets["SOUNDS"].output["HERO_SUMMON_METEOR_SKILL"]);
+                    // window.playSound(window.gameAssets["SOUNDS"].output["HERO_SUMMON_METEOR_SKILL"]);
                     window.gameInfo.activeObjects.meteors.push(
                         new Meteor(this.pos)
                     );
@@ -627,7 +627,7 @@ class Player {
             break;
             case 'SHIELD':
                 inv = () => {
-                    window.playSound(window.gameAssets["SOUNDS"].output["HERO_SHIELD_SKILL"]);
+                    // window.playSound(window.gameAssets["SOUNDS"].output["HERO_SHIELD_SKILL"]);
                     const _a = fd();
 
                     this.shieldMinus = gp(_a.damageReduce, _a.level);
@@ -641,7 +641,7 @@ class Player {
             break;
             case 'NO_LIMITS':
                 inv = () => {
-                    window.playSound(window.gameAssets["SOUNDS"].output["HERO_NO_LIMITS_SKILL"]);
+                    // window.playSound(window.gameAssets["SOUNDS"].output["HERO_NO_LIMITS_SKILL"]);
                     this.lastManaInfinity = this.currentMana;
                     this.currentMana = this.mana = Infinity;
 
@@ -652,7 +652,7 @@ class Player {
             break;
             case 'RAGE':
                 inv = () => {
-                    window.playSound(window.gameAssets["SOUNDS"].output["HERO_RAGE_SKILL"]);
+                    // window.playSound(window.gameAssets["SOUNDS"].output["HERO_RAGE_SKILL"]);
                     this.isBlinking = true;
 
                     this.movespeed = this.#_bs / 2;
