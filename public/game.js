@@ -1,14 +1,3 @@
-// WARNING: No static player speed
-
-/* PARENTS */
-window.importJS('./classes/Obstacle.js');
-
-/* CHILDREN */
-window.importJS('./classes/Block.js');
-window.importJS('./classes/Player.js');
-window.importJS('./classes/FallingItem.js');
-window.importJS('./classes/Meteor.js');
-
 const spreadID = a => {
     let i = 0;
 
@@ -415,8 +404,10 @@ const map = [ // goes from down to up of the screen
 let liveMap = window.liveMap = [];
 
 const gameInfo = window.gameInfo = {
-    appStage: "MAIN_MENU", // MAIN_MENU, MENU_LEVELS, MENU_EVOLUTION, MENU_CONVERTOR, GAME_ACTION
+    appStage: "MENU_CONVERTOR", // MAIN_MENU, MENU_LEVELS, MENU_EVOLUTION, MENU_CONVERTOR, GAME_ACTION
+    appStageInfo: {},
     active: false,
+    lastBtnClick: +new Date,
     canvas: {
         height: innerHeight + 1,
         width: innerWidth,
@@ -466,8 +457,8 @@ window.playSound = s => {
 }
 
 function fitTImage(i, w = null, h = null) {
-    if(!w) w = innerWidth;
-    if(!h) h = innerHeight;
+    if(!w) w = width;
+    if(!h) h = height;
 
     const p = h * (i.width / i.height);
 
@@ -478,6 +469,17 @@ function fitTImage(i, w = null, h = null) {
         w,
         p
     ];
+}
+
+const pointsToFlash = a => a / 5;
+
+function askForClick(gonnaClick = false) {
+    const a = abs(gameInfo.lastBtnClick / 1000 - +new Date / 1000) > .5;
+    console.log(abs(gameInfo.lastBtnClick / 1000 - +new Date / 1000));
+
+    if(gonnaClick && a) gameInfo.lastBtnClick = +new Date;
+
+    return a;
 }
 
 function handleNextBlock() {
@@ -522,7 +524,7 @@ function handleNextBlock() {
                 gameInfo.activeObjects.fallingItems.push(
                     new FallingItem(
                         size, size,
-                        random(0, innerWidth - size),
+                        random(0, width - size),
                         -size,
                         random(speed[0], speed[1]), // speed // LEVELING
                         "OBSTACLE",
@@ -537,7 +539,7 @@ function handleNextBlock() {
                 gameInfo.activeObjects.fallingItems.push(
                     new FallingItem(
                         size, size,
-                        random(0, innerWidth - size),
+                        random(0, width - size),
                         -size,
                         random(10, 12.5), // speed // LEVELING
                         "POINTS",
@@ -576,10 +578,15 @@ function handlePlayFood() {
     }
 }
 
+function changeAppStage(s) {
+    gameInfo.appStage = s;
+    gameInfo.appStageInfo = {}
+}
+
 function inititalizeGame(lvl) {
     gameInfo.gameLevel = lvl;
     gameInfo.active = true;
-    gameInfo.appStage = "GAME_ACTION";
+    changeAppStage("GAME_ACTION");
 
     gameInfo.activeObjects.player = new Player(400, 20);
 
@@ -658,6 +665,43 @@ function setup() {
 }
 
 function draw() {
+    // Display points
+    function drawPoints() {
+        let im = 7.5, // icon margin
+            sg = 15, // stat gap (top, right)
+            is = 30, // icon size
+            sm = 10; // stat margin
+
+        [
+            {
+                icon: gameAssets["HUD_ITEMS"].output["POINTS"]["POINT"],
+                value: gameInfo.gameSession.points
+            },
+            {
+                icon: gameAssets["HUD_ITEMS"].output["POINTS"]["FLASH_POINT"],
+                value: gameInfo.gameSession.flashPoints
+            }
+        ].forEach(({ icon, value }, ik) => {
+            const iy = sg + ( (is + sm) * ik );
+
+            image(
+                icon,
+                width - is - sg,
+                iy,
+                is, is
+            );
+
+            textAlign(RIGHT, CENTER);
+            fill('white');
+            textSize(25);
+            text(
+                value,
+                width - is - sg - im,
+                iy + is / 2 + 1
+            );
+        });
+    }
+
     switch(gameInfo.appStage) {
         case 'MAIN_MENU':
         case 'MENU_LEVELS': {
@@ -693,7 +737,6 @@ function draw() {
                             }
                         ];
                     } else if(gameInfo.appStage === "MENU_LEVELS") {
-
                         buttons = [
                             {
                                 title: "HELL",
@@ -723,8 +766,8 @@ function draw() {
                     let mouseHover = false;
 
                     buttons.forEach(({ title, toStage, onClick }, ik) => {
-                        const x = innerWidth / 2 - bw / 2,
-                              y = innerHeight / 2 - buttonsH / 2 + ik * (bm + bh);
+                        const x = width / 2 - bw / 2,
+                              y = height / 2 - buttonsH / 2 + ik * (bm + bh);
 
                         fill('white');
                         image(
@@ -752,11 +795,11 @@ function draw() {
                         if(ih && !mouseHover) mouseHover = true;
 
                         // ::active::
-                        if(mouseIsPressed && ih) {
+                        if(mouseIsPressed && ih && askForClick(true)) {
                             mouseIsPressed = false;
 
                             if(onClick) onClick();
-                            else if(toStage) gameInfo.appStage = toStage;
+                            else if(toStage) changeAppStage(toStage);
                             else console.error(`Stage ${ toStage } is not available yet.`);
                         }
                     });
@@ -768,50 +811,156 @@ function draw() {
                     }
                 }
 
-                // Display points
-                {
-                    let im = 7.5, // icon margin
-                        sg = 15, // stat gap (top, right)
-                        is = 30, // icon size
-                        sm = 10; // stat margin
-
-                    [
-                        {
-                            icon: gameAssets["HUD_ITEMS"].output["POINTS"]["POINT"],
-                            value: "100"
-                        },
-                        {
-                            icon: gameAssets["HUD_ITEMS"].output["POINTS"]["FLASH_POINT"],
-                            value: "10"
-                        }
-                    ].forEach(({ icon, value }, ik) => {
-                        const iy = sg + ( (is + sm) * ik );
-
-                        image(
-                            icon,
-                            innerWidth - is - sg,
-                            iy,
-                            is, is
-                        );
-
-                        textAlign(RIGHT, CENTER);
-                        fill('white');
-                        textSize(25);
-                        text(
-                            value,
-                            innerWidth - is - sg - im,
-                            iy + is / 2 + 1
-                        );
-                    });
-                }
+                drawPoints();
             pop();
         }
         break;
         case 'MENU_EVOLUTION':
             background('blue');
         break;
-        case 'MENU_CONVERTOR':
-            background('purple');
+        case 'MENU_CONVERTOR': {
+            image(...fitTImage(gameAssets["BACKGROUNDS"].output["MOUNTAINS_LOW"]));
+
+            const em = 40, // ess margin
+                  eis = 30, // ess icon size
+                  etm = 100, // ess text margin
+                  elim = 5, // ess low text margin
+                  sw = 300, // slider width
+                  sh = 10, // slider height
+                  scs = 20, // slider cursor siz
+                  dbw = 120, // default button width
+                  dbh = 55, // default button height
+                  dbm = 20; // default button margin
+
+            const toCenter = height / 2 - (eis + 20 + sh + scs / 2 + (dbh + dbm) * 2) / 2
+            const pointsToConvert = round(gameInfo.gameSession.points / 100 * (gameInfo.appStageInfo.sliderProcent || 0));
+
+            // Points
+            image(
+                gameAssets["HUD_ITEMS"].output["POINTS"]["POINT"],
+                width / 2 - eis / 2 - etm,
+                toCenter,
+                eis, eis
+            );
+            push();
+                textAlign(CENTER, TOP);
+                text(
+                    pointsToConvert,
+                    width / 2 - etm,
+                    eis + elim + toCenter
+                );
+            pop();
+
+            push();
+                textAlign(CENTER, TOP);
+                stroke('rgba(0, 0, 0, .15)');
+                strokeWeight(2);
+                text(
+                    ">",
+                    width / 2,
+                    eis / 2 + toCenter
+                );
+            pop();
+
+            // Flash Points
+            image(
+                gameAssets["HUD_ITEMS"].output["POINTS"]["FLASH_POINT"],
+                width / 2 - eis / 2 + etm,
+                toCenter,
+                eis, eis
+            );
+            push();
+                textAlign(CENTER, TOP);
+                text(
+                    pointsToFlash(pointsToConvert),
+                    width / 2 + etm,
+                    eis + elim + toCenter
+                );
+            pop();
+
+            drawPoints();
+
+            // Progress bar
+            {
+                const x = width / 2 - sw / 2,
+                      y = eis + elim + 30 + toCenter;
+
+                push();
+                    fill('rgba(255, 255, 255, .5)');
+                    noStroke();
+                    rect(
+                        x,
+                        y,
+                        sw,
+                        sh
+                    );
+                    fill('black');
+                    stroke('white');
+                    strokeWeight(5);
+                    ellipse(
+                        x + sw / 100 * (gameInfo.appStageInfo.sliderProcent || 0),
+                        y + sh / 2,
+                        scs,
+                        scs    
+                    );
+                pop();
+
+                if(
+                    mouseIsPressed &&
+                    mouseX >= x && mouseX <= x + sw &&
+                    mouseY >= y && mouseY <= y + sh
+                ) {
+                    gameInfo.appStageInfo.sliderProcent = (mouseX - x) / sw * 100;
+                }
+            }
+
+            // Buttons
+            [
+                {
+                    title: "Convert",
+                    onClick: () => {
+                        if(!pointsToConvert) return;
+
+                        gameInfo.appStageInfo.sliderProcent = 0;
+
+                        const a = window.gameInfo.gameSession;
+                        a.points -= pointsToConvert;
+                        a.flashPoints += pointsToFlash(pointsToConvert);
+                        window.gameInfo.pushSession(a);
+                    }
+                },
+                {
+                    title: "Menu",
+                    onClick: () => changeAppStage("MAIN_MENU")
+                }
+            ].forEach(({ title, onClick }, index) => {
+                const x = width / 2 - dbw / 2,
+                      y = eis + elim + 30 + sh / 2 + dbm * (index + 1) + dbh * index + toCenter;
+
+                image(
+                    gameAssets["HUD_ITEMS"].output["BUTTONS"]["GREEN_SIMPLE"],
+                    x,
+                    y,
+                    dbw,
+                    dbh
+                );
+                textAlign(CENTER);
+                text(
+                    title,
+                    x + 2.5,
+                    y,
+                    dbw,
+                    dbh
+                );
+
+                if(
+                    onClick && mouseIsPressed &&
+                    mouseX >= x && mouseX <= x + dbw &&
+                    mouseY >= y && mouseY <= y + dbh &&
+                    askForClick(true)
+                ) onClick();
+            });
+        }
         break;
         case 'GAME_ACTION': {
             handleNextBlock();
@@ -841,7 +990,7 @@ function draw() {
                                 liveMap[iy][ix] = (new Block(
                                     mo.output,
                                     ix * s,
-                                    innerHeight - (iy + 1) * s,
+                                    height - (iy + 1) * s,
                                     s,
                                     ([
                                         gameAssets["SPIKES_ABLOCK"].markupID
@@ -871,8 +1020,8 @@ function draw() {
 
                 // Food
                 image(
-                    gameAssets["FOOD"].output["BANANAS"],
-                    innerWidth / 2 - fis / 2 - cfg,
+                    gameAssets["HUD_ITEMS"].output["POINTS"]["POINT"],
+                    width / 2 - fis / 2 - cfg,
                     mt,
                     fis,
                     fis
@@ -881,8 +1030,8 @@ function draw() {
                 fill('white');
                 text(
                     gameInfo.gameSession.points,
-                    innerWidth / 2 - fis / 2 + cfg,
-                    mt + fis / 2 + 5
+                    width / 2 - fis / 2 + cfg + 15,
+                    mt + fis / 2
                 );
 
                 // Health & Mana
@@ -912,7 +1061,7 @@ function draw() {
                         noStroke();
                         fill('rgba(0, 0, 0, .2)');
                         rect(
-                            innerWidth / 2 - cw / 2,
+                            width / 2 - cw / 2,
                             _y,
                             cw,
                             hh
@@ -921,7 +1070,7 @@ function draw() {
                         {
                             const _mh = 1 - infoContainer.current / infoContainer.max;
                             rect(
-                                innerWidth / 2 - cw / 2,
+                                width / 2 - cw / 2,
                                 _y,
                                 cw - cw * ((_mh > 0) ? _mh : 0),
                                 hh
@@ -937,8 +1086,8 @@ function draw() {
 
                         text(
                             _text,
-                            innerWidth / 2,
-                            _y + hh / 2 + 4.5
+                            width / 2,
+                            _y + hh / 2
                         );
                     pop();
                 });
@@ -949,7 +1098,7 @@ function draw() {
                 const skillsW = a => ( Number.isInteger(a) ? a : skills.length - 1 ) * (sis + smr);
                 
                 skills.map(({ level, fireKeyCode, name, icons, restorePack, durationPack, usePrice, borderType, displayName }, index) => {
-                    const x = innerWidth / 2 - cw / 2 + skillsW(index) + cw / 2 - skillsW() / 2 - sis / 2,
+                    const x = width / 2 - cw / 2 + skillsW(index) + cw / 2 - skillsW() / 2 - sis / 2,
                           y = mt + fis + (hh + ibm * infoBars.length) + mt / 4 + gbe * 2;
 
                     push();
@@ -983,12 +1132,12 @@ function draw() {
                         strokeWeight(4);
                         stroke('white');
                         textSize(17.5);
-                        textAlign(CENTER);
+                        textAlign(CENTER, CENTER);
                         fill('black');
                         text(
                             String.fromCharCode(fireKeyCode),
                             x + sis / 2 + .5,
-                            y + sis / 2 + 6
+                            y + sis / 2
                         );
                         // restored
                         const skilld = gameInfo.activeObjects.player.getUsedSkills[name];

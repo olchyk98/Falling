@@ -1,7 +1,7 @@
 // importme.js by Oles Odynets. May 2019
 
 window.importJS = u => {
-    const c = a => console.error(a);
+    const c = console.error;
 
     if(!u || typeof u !== "string" || !u.replace(/\s|\n/g, "").length) {
         return c("[IMPORTME] File path is invalid!");
