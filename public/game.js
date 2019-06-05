@@ -404,7 +404,7 @@ const map = [ // goes from down to up of the screen
 let liveMap = window.liveMap = [];
 
 const gameInfo = window.gameInfo = {
-    appStage: "MENU_CONVERTOR", // MAIN_MENU, MENU_LEVELS, MENU_EVOLUTION, MENU_CONVERTOR, GAME_ACTION
+    appStage: "MENU_EVOLUTION", // MAIN_MENU, MENU_LEVELS, MENU_EVOLUTION, MENU_CONVERTOR, GAME_ACTION
     appStageInfo: {},
     active: false,
     lastBtnClick: +new Date,
@@ -475,7 +475,6 @@ const pointsToFlash = a => a / 5;
 
 function askForClick(gonnaClick = false) {
     const a = abs(gameInfo.lastBtnClick / 1000 - +new Date / 1000) > .5;
-    console.log(abs(gameInfo.lastBtnClick / 1000 - +new Date / 1000));
 
     if(gonnaClick && a) gameInfo.lastBtnClick = +new Date;
 
@@ -1013,12 +1012,12 @@ function draw() {
                     mt = 20, // margin top
                     fis = 25, // points icon size
                     gbe = 12.5, // gap between elements
-                    cfg = 17.5, // custom points c-items gap
+                    cfg = 10, // custom points c-items gap
                     sis = 42.5, // skill icon size
                     sims = sis * .75, // skill icon mat size
                     smr = 25; // skills margin
 
-                // Food
+                // Points
                 image(
                     gameAssets["HUD_ITEMS"].output["POINTS"]["POINT"],
                     width / 2 - fis / 2 - cfg,
@@ -1026,13 +1025,16 @@ function draw() {
                     fis,
                     fis
                 );
-                textSize(20);
-                fill('white');
-                text(
-                    gameInfo.gameSession.points,
-                    width / 2 - fis / 2 + cfg + 15,
-                    mt + fis / 2
-                );
+                push();
+                    textAlign(LEFT, CENTER);
+                    textSize(20);
+                    fill('white');
+                    text(
+                        gameInfo.gameSession.points,
+                        width / 2 - fis / 2 + cfg + 15,
+                        mt + fis / 2
+                    );
+                pop();
 
                 // Health & Mana
                 const playerStats = gameInfo.activeObjects.player.getStats();
@@ -1078,7 +1080,7 @@ function draw() {
                         }
                         textSize(12.5);
                         fill(colorText);
-                        textAlign(CENTER);
+                        textAlign(CENTER, CENTER);
 
                         let _text = `${ floor(infoContainer.current) }${ name } (${ floor(infoContainer.current / infoContainer.max * 100) }%)`;
 
