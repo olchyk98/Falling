@@ -362,6 +362,13 @@ const gameAssets = window.gameAssets = spreadID({
         },
         output: null
     },
+    "STUFF": {
+        type: "LOADABLE_KEYS_MODEL_PACK",
+        murl: {
+            "PROGRESSION_BACKGROUND": './assets/other/levelupbg.png'
+        },
+        output: null
+    },
     // "SOUNDS": {
     //     type: "LOADABLE_KEYS_SOUND_PACK",
     //     murl: {
@@ -814,8 +821,70 @@ function draw() {
             pop();
         }
         break;
-        case 'MENU_EVOLUTION':
-            background('blue');
+        case 'MENU_EVOLUTION': {
+            // global variables (container I, container II)
+            const siw = 350; // skill info width
+
+            // Skill info container
+            const si_ctm = 20, // skill info -> content top margin
+                  si_sis = 100, // skill info -> skill icon size
+                  si_ing = 20, // skill info -> icon, name gap
+                  si_nts = 30, // skill info -> name text size
+                  si_sdt = 20; // skill info -> skill description text
+
+            image(
+                gameAssets["SKILLS"].output["ATTACK"][0],
+                siw / 2 - si_sis / 2,
+                si_ctm,
+                si_sis,
+                si_sis
+            );
+
+            push();
+                textAlign(CENTER, TOP);
+                noStroke();
+                textFont('Arial');
+
+                textSize(si_nts);
+                text(
+                    "BLOODY REVENGE",
+                    siw / 2,
+                    si_ctm + si_sis + si_ing  
+                );
+
+                [
+                    {
+                        txt: "Damage: 100/*200*/300"
+                    },
+                    {
+                        txt: "Restore: 100/*200*/300"
+                    },
+                    {
+                        txt: "Radius: 100/*200*/300"
+                    },
+                    {
+                        txt: "Update price: 100/*200*/300"
+                    }
+                ].forEach(({ txt }, il) => {
+                    textSize(si_sdt);
+                    text(
+                        txt,
+                        siw / 2,
+                        si_ctm + si_sis + si_ing * 2 + ((il !== 0) ? si_nts + si_sdt * (il + 1) : si_nts) / 2
+                    );
+                });
+            pop();
+
+            // Skills / Points container
+            image(
+                gameAssets["STUFF"].output["PROGRESSION_BACKGROUND"],
+                siw,
+                0,
+                width - siw,
+                height
+            );
+
+        }
         break;
         case 'MENU_CONVERTOR': {
             image(...fitTImage(gameAssets["BACKGROUNDS"].output["MOUNTAINS_LOW"]));
